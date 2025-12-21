@@ -1,18 +1,15 @@
 "use client";
-import { FieldValues, useForm } from "react-hook-form";
+
+import { useForm, FieldValues } from "react-hook-form";
 import { Form, FormField } from "@/components/ui/form";
-import { Card, CardAction, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import Image from "next/image";
-import Link from "next/link";
-import { REGEXP_ONLY_DIGITS_AND_CHARS } from "input-otp";
-import {
-    InputOTP,
-    InputOTPGroup,
-    InputOTPSlot,
-} from "@/components/ui/input-otp";
+import { REGEXP_ONLY_DIGITS } from "input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+
+
 export default function OTPPage() {
     const form = useForm();
     const router = useRouter()
@@ -20,84 +17,82 @@ export default function OTPPage() {
 
     async function onSubmit(data: FieldValues) {
         console.log(data);
+        router.push('/login'); // Redirect setelah sukses
     }
 
-
     return (
-        <div className="w-full h-screen overflow-x-hidden ">
-            <div className="grid max-lg:grid-cols-1 grid-cols-2 h-full w-full">
-                <div className="flex justify-center items-center flex-col max-w-lg m-auto w-full p-6 lg:p-8 h-full max-lg:col-span-1">
-                    <Card className="w-full shadow-none rounded-none border-0">
-                        <CardHeader className="w-full">
-                            <Image src={'/src/logo/light-mode-horizontal.png'} loading="eager" alt="logo" width={1024} height={265} className="w-48 h-auto mb-2" />
-                            <CardTitle className="text-2xl font-bold text-gray-800 leading-6">Konfirmasi Kode OTP
-                            </CardTitle>
-                            <CardDescription>
-                                Silahkan masukan kode OTP yang telah kami kirim ke email anda.
-                            </CardDescription>
-                        </CardHeader>
+        <div className="relative w-full min-h-screen bg-black  text-white overflow-hidden">
+            <Image
+                src="/src/images/illustration/login.png"
+                alt="Login Illustration"
+                width={16000}
+                height={9000}
+                unoptimized
+                loading="eager"
+                className="z-1 w-screen h-screen object-cover absolute left-[50%] top-0 -translate-x-1/2 -trnslate-y-1/3  opacity-10"
+            />
+            <div className="relative w-full max-w-6xl mx-auto flex min-h-screen">
 
-                        <CardContent>
-                            <Form {...form} >
-                                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-                                    <FormField
-                                        control={form.control}
-                                        name="..."
-                                        render={({ field }) => (
-                                            <>
-                                                <InputOTP
-                                                    id="otp"
-                                                    className="w-full"
-                                                    maxLength={6}
-                                                    value={value}
-                                                    name="otp"
-                                                    required
-                                                    inputMode="numeric"
-                                                    type="text"
-                                                    autoComplete="off"
-                                                    autoCorrect="off"
-                                                    autoCapitalize="off"
-                                                    spellCheck="false"
-                                                    autoFocus={true}
-                                                    tabIndex={0}
-                                                    placeholder="*"
-                                                    onChange={(value) => setValue(value)}
-                                                    pattern={REGEXP_ONLY_DIGITS_AND_CHARS}>
-                                                    <InputOTPGroup className="w-full">
-                                                        <InputOTPSlot index={0} />
-                                                        <InputOTPSlot index={1} />
-                                                        <InputOTPSlot index={2} />
-                                                        <InputOTPSlot index={3} />
-                                                        <InputOTPSlot index={4} />
-                                                        <InputOTPSlot index={5} />
-                                                    </InputOTPGroup>
-                                                </InputOTP>
-                                            </>
-                                        )}
-                                    />
-                                    <CardAction className="w-full">
-                                        <Button type="submit" className="w-full cursor-pointer" onClick={() => {
-                                            router.push('/login')
-                                        }}>Verifikasi</Button>
-                                    </CardAction>
-                                </form>
-                            </Form>
-                        </CardContent>
-                        <CardFooter className="text-sm">
-                            <CardDescription className="text-gray-600">Belum mendapatkan kode OTP?&nbsp;<Link href="/resend-otp" className="font-semibold">Kirim ulang.</Link></CardDescription>.
-                        </CardFooter>
-                    </Card>
+                {/* Background Blob Effect */}
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125  rounded-full pointer-events-none" />
 
-                </div>
+                <div className="w-full max-w-lg mx-auto rounded-2xl p-8 relative z-10 text-center flex flex-col justify-center items-center">
 
-                <div className="flex justify-center items-center flex-col w-full h-full bg-gray-300/10 backdrop-blur-3xl max-lg:hidden">
-                    <Card className="w-full shadow-none rounded-none border-0 col-span-1 bg-transparent">
-                        <CardContent className="w-full h-full">
-                            <Image src={"/src/images/illustration/1.png"} loading="eager" alt="login illustration" width={2048} height={959} className="w-[90%] mx-auto h-auto" />
-                        </CardContent>
-                    </Card>
+                    <div className="mb-6">
+                        <div className="mx-auto w-12 h-12  rounded-full flex items-center justify-center mb-4 border ">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6 text-cyan-400"><rect width="18" height="11" x="3" y="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                        </div>
+                        <h1 className="text-2xl font-bold text-white">Verifikasi OTP</h1>
+                        <p className="text-zinc-400 mt-2 text-sm">
+                            Kami telah mengirimkan kode 6 digit ke email Anda. Masukkan di bawah ini.
+                        </p>
+                    </div>
+
+                    <Form {...form} >
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                            <div className="flex justify-center">
+                                <FormField
+                                    control={form.control}
+                                    name="otp"
+                                    render={() => (
+                                        <InputOTP
+                                            maxLength={6}
+                                            value={value}
+                                            onChange={(value) => setValue(value)}
+                                            pattern={REGEXP_ONLY_DIGITS}
+                                            className="gap-2"
+                                        >
+                                            <InputOTPGroup className="gap-2">
+                                                {[0, 1, 2, 3, 4, 5].map((index) => (
+                                                    <InputOTPSlot
+                                                        key={index}
+                                                        index={index}
+                                                        className="w-10 h-12 border-white/10 bg-zinc-700 text-white focus:text-white text-lg focus:border-cyan-500 focus:ring-cyan-500/20 rounded-md"
+                                                    />
+                                                ))}
+                                            </InputOTPGroup>
+                                        </InputOTP>
+                                    )}
+                                />
+                            </div>
+
+                            <Button
+                                type="submit"
+                                className="w-full h-11 bg-cyan-500 hover:bg-cyan-400 text-black font-bold shadow-lg shadow-cyan-500/20"
+                            >
+                                Verifikasi & Masuk
+                            </Button>
+                        </form>
+                    </Form>
+
+                    <p className="mt-6 text-sm text-zinc-500">
+                        Tidak menerima kode?{" "}
+                        <button onClick={() => alert("Resend trigger")} className="text-white hover:underline font-medium">
+                            Kirim Ulang
+                        </button>
+                    </p>
                 </div>
             </div>
-        </div >
+        </div>
     );
 }
