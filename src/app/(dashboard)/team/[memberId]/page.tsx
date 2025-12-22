@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
     Mail, MapPin, Calendar, GitCommit, GitPullRequest,
@@ -46,9 +46,8 @@ const memberActivity = [
     { action: "deployed", target: "production v1.2.0", time: "Yesterday", icon: Zap },
 ];
 
-export default function MemberDetailPage({ params }: { params: Promise<{ memberId: string }> }) {
-    // Unwrap params (Next.js 15)
-    const { memberId } = use(params);
+export default function MemberDetailPage() {
+
     const [activeTab, setActiveTab] = useState("overview");
 
     return (

@@ -9,7 +9,6 @@ import {
     CreditCard,
     Settings,
     ChevronDown,
-    Users,
     LogOut,
     Activity,
     Bell,
@@ -47,7 +46,7 @@ import {
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-
+import Image from "next/image";
 // Data Navigasi (Tetap)
 const data = {
     navMain: [
@@ -130,10 +129,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                     NS
                                 </div>
                             ) : (
-                                <div className="flex items-center gap-2 px-2">
-                                    <span className="text-xl font-bold bg-clip-text text-transparent bg-linear-to-r from-white to-zinc-400">
-                                        NusantaraSaaS
-                                    </span>
+                                <div className="flex items-start gap-2 px-2 w-full h-full">
+                                    <Image src="/src/logo/dark-mode-horizontal.png" width={400} height={200} alt="Logo" unoptimized loading="eager" className="w-32 h-auto" />
                                 </div>
                             )}
                         </SidebarMenuItem>
@@ -277,7 +274,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
             {/* --- MODAL DIALOG: BUAT TIM BARU --- */}
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                <DialogContent className="bg-zinc-950 border-white/10 text-white sm:max-w-[425px]">
+                <DialogContent className="bg-zinc-950 border-white/10 text-white sm:max-w-106.25">
                     <DialogHeader>
                         <DialogTitle>Buat Tim Baru</DialogTitle>
                         <DialogDescription className="text-zinc-400">

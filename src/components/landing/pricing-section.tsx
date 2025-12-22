@@ -1,131 +1,145 @@
 "use client";
 
-import { Check, X } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { RevealOnScroll } from "@/components/ui/reveal-on-scroll";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../ui/card";
+import { useState } from "react";
+import { MidtransSnap, SnapResult } from "../billing/midtrans-snap";
+import { toast } from "sonner";
+import { Badge } from "../ui/badge";
+
+const plans = [
+    { id: "starter", name: "Starter", price: "$0", period: "/mo", description: "Untuk project hobi dan eksperimen.", features: ["1 Team Member", "3 Projects", "5GB Storage", "Community Support"], current: false },
+    { id: "pro", name: "Pro", price: "$29", period: "/mo", description: "Untuk developer professional & tim kecil.", features: ["5 Team Members", "Unlimited Projects", "50GB Storage", "Priority Support", "Advanced Analytics"], current: true, recommended: true },
+    { id: "enterprise", name: "Enterprise", price: "$99", period: "/mo", description: "Skala besar dengan keamanan tingkat tinggi.", features: ["Unlimited Members", "Unlimited Projects", "1TB Storage", "24/7 Dedicated Support", "SSO & Audit Logs"], current: false },
+];
+
 
 export function PricingSection() {
+    const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+    const [isSnapOpen, setIsSnapOpen] = useState(false);
+    const [snapConfig, setSnapConfig] = useState<{ orderId: string, grossAmount: string, itemName: string } | null>(null);
+    const [price, setPrice] = useState<string | null>(null);
+
+    // --- HANDLERS UTAMA ---
+
+    // 1. Handle tombol "Upgrade Plan"
+    const handleUpgrade = (planId: string, planName: string, price: string) => {
+        setLoadingPlan(planId);
+        setPrice(price);
+
+        // Simulasi request token ke backend (delay 1s)
+        setTimeout(() => {
+            setLoadingPlan(null);
+
+            // Setup config Snap
+            setSnapConfig({
+                orderId: `ORD-${Date.now()}`,
+                grossAmount: price,
+                itemName: `Upgrade to ${planName} Plan`
+            });
+
+            // Buka Popup
+            setIsSnapOpen(true);
+        }, 1000);
+    };
+
+
+    const handlePaymentResult = (result: SnapResult) => {
+        setIsSnapOpen(false);
+
+        if (result === "success") {
+            toast.success("Pembayaran Berhasil!", {
+                description: `Paket langganan Anda telah diperbarui.`,
+                className: "bg-green-500 text-white"
+            });
+            // Disini bisa tambahkan logika untuk update state UI paket aktif
+        } else if (result === "pending") {
+            toast.warning("Pembayaran Pending", {
+                description: "Selesaikan pembayaran Anda melalui ATM/Mobile Banking.",
+                className: "bg-yellow-500 text-white"
+            });
+        } else if (result === "error") {
+            toast.error("Pembayaran Gagal", {
+                description: "Terjadi kesalahan atau transaksi dibatalkan.",
+                className: "bg-red-500 text-white"
+            });
+        }
+    };
+
     return (
-        <section className="bg-black py-24 relative overflow-hidden">
-            <div className="w-full max-w-6xl mx-auto">
-                {/* Background Gradient Blob (Pemanis) */}
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-purple-900/20 blur-[120px] rounded-full pointer-events-none" />
+        <>
+            <section className="bg-black py-24 relative overflow-hidden" id="pricing">
+                <div className="w-full max-w-6xl mx-auto">
+                    {/* Background Gradient Blob (Pemanis) */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-purple-900/20 blur-[120px] rounded-full pointer-events-none" />
 
-                <div className="w-full max-w-6xl mx-auto px-4 relative z-10">
+                    <div className="w-full max-w-6xl mx-auto px-4 relative z-10">
 
-                    {/* HEADER */}
-                    <div className="text-center mb-16 w-full">
-                        <RevealOnScroll width="100%">
-                            <h2 className="text-3xl font-bold text-white md:text-5xl mb-6">
-                                Investasi Sekali, <br />
-                                <span className="text-transparent bg-clip-text bg-linear-to-r from-teal-200 via-cyan-400 to-teal-300">
-                                    Untung Berkali-kali.
-                                </span>
-                            </h2>
-                            <p className="mx-auto max-w-2xl text-zinc-400 text-lg">
-                                Stop bayar langganan bulanan. Dapatkan <em>full source code</em> dan hak milik selamanya.
-                                Kirim invoice ke klien Anda minggu depan.
-                            </p>
-                        </RevealOnScroll>
-                    </div>
+                        {/* HEADER */}
+                        <div className="text-center mb-16 w-full">
+                            <RevealOnScroll width="100%">
+                                <h2 className="text-3xl font-bold text-white md:text-5xl mb-6">
+                                    Investasi Sekali, <br />
+                                    <span className="text-transparent bg-clip-text bg-linear-to-r from-teal-200 via-cyan-400 to-teal-300">
+                                        Untung Berkali-kali.
+                                    </span>
+                                </h2>
+                                <p className="mx-auto max-w-2xl text-zinc-400 text-lg">
+                                    Stop bayar langganan bulanan. Dapatkan <em>full source code</em> dan hak milik selamanya.
+                                    Kirim invoice ke klien Anda minggu depan.
+                                </p>
+                            </RevealOnScroll>
+                        </div>
 
-                    {/* PRICING GRID (Responsive: 1 col di HP, 2 col di Desktop) */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto items-start w-full">
-
-                        {/* --- PLAN 1: STANDARD (Indie Hacker) --- */}
+                        {/* PRICING GRID (Responsive: 1 col di HP, 2 col di Desktop) */}
                         <RevealOnScroll delay={0.1} width="100%">
-                            <div className="relative rounded-3xl border border-white/10 bg-zinc-900/50 p-8 transition-all hover:border-white/20">
-                                <h3 className="text-xl font-semibold text-zinc-100">Indie Hacker</h3>
-                                <p className="mt-2 text-zinc-400 text-sm">Cocok untuk solo developer membangun MVP.</p>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                                {plans.map((plan) => (
+                                    <Card key={plan.id} className={`relative flex flex-col bg-zinc-900/50 backdrop-blur-sm border-white/10 transition-all duration-200 ${plan.current ? "border-cyan-500/50 bg-cyan-950/10 shadow-[0_0_20px_rgba(6,182,212,0.1)]" : "hover:border-white/20 hover:-translate-y-1"}`}>
+                                        {plan.recommended && (<div className="absolute top-0 right-0 -mt-3 mr-3"><Badge className="bg-linear-to-r from-cyan-500 to-blue-600 border-0">Paling Laris</Badge></div>)}
+                                        <CardHeader>
+                                            <CardTitle className="text-white text-xl">{plan.name}</CardTitle>
+                                            <div className="mt-2 text-zinc-400"><span className="text-3xl font-bold text-white tracking-tight">{plan.price}</span><span className="text-sm">{plan.period}</span></div>
+                                            <CardDescription className="text-zinc-500 mt-2">{plan.description}</CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="flex-1">
+                                            <ul className="space-y-3">
+                                                {plan.features.map((feature, i) => (<li key={i} className="flex items-start text-sm text-zinc-300"><Check className="w-4 h-4 text-cyan-500 mr-2 shrink-0 mt-0.5" />{feature}</li>))}
+                                            </ul>
+                                        </CardContent>
+                                        <CardFooter>
+                                            <Button
+                                                className={`w-full bg-cyan-600 hover:bg-cyan-500 text-white shadow-[0_0_15px_rgba(8,145,178,0.4)]`}
 
-                                <div className="my-6 flex items-baseline gap-1">
-                                    <span className="text-4xl font-bold text-white">$49</span>
-                                    <span className="text-zinc-500">/ license</span>
-                                </div>
-
-                                <Button className="w-full rounded-full bg-white/10 text-white hover:bg-white hover:text-teal-600 h-12" variant="outline">
-                                    Beli Standard
-                                </Button>
-
-                                <ul className="mt-8 space-y-4 text-sm text-zinc-300">
-                                    <li className="flex items-center gap-3">
-                                        <Check className="h-5 w-5 text-white shrink-0" /> <span>Full Source Code Next.js 15</span>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <Check className="h-5 w-5 text-white shrink-0" /> <span>Database Schema & Auth</span>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <Check className="h-5 w-5 text-white shrink-0" /> <span>Akses Lifetime Update</span>
-                                    </li>
-                                    <li className="flex items-center gap-3 text-zinc-500">
-                                        <X className="h-5 w-5 shrink-0" /> <span>Figma Design File</span>
-                                    </li>
-                                    <li className="flex items-center gap-3 text-zinc-500">
-                                        <X className="h-5 w-5 shrink-0" /> <span>Prioritas Support 24/7</span>
-                                    </li>
-                                </ul>
+                                                // TRIGGER UPGRADE MIDTRANS
+                                                onClick={() => handleUpgrade(plan.id, plan.name, plan.price)}
+                                            >
+                                                {loadingPlan === plan.id ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processing...</>) : ("Pilih Paket")}
+                                            </Button>
+                                        </CardFooter>
+                                    </Card>
+                                ))}
                             </div>
                         </RevealOnScroll>
-
-                        {/* --- PLAN 2: PRO (Software House) - THE GLOWING ONE --- */}
-                        <RevealOnScroll delay={0.2} width="100%">
-                            <div className="relative rounded-3xl border border-cyan-500/50 bg-zinc-900/80 p-8 shadow-[0_0_40px_-10px_rgba(6,182,212,0.15)] transition-transform hover:scale-[1.02]">
-
-                                {/* Badge Popular */}
-                                <div className="absolute z-50 -top-4 left-1/2 -translate-x-1/2 rounded-full bg-cyan-500 px-4 py-1 text-xs font-bold text-black shadow-lg shadow-cyan-500/20">
-                                    PALING LARIS
-                                </div>
-
-                                <h3 className="text-xl font-semibold text-white">Software House</h3>
-                                <p className="mt-2 text-cyan-200/70 text-sm">Paket lengkap untuk tim dan agency.</p>
-
-                                <div className="my-6 flex items-baseline gap-1">
-                                    <span className="text-4xl font-bold text-white">$99</span>
-                                    <span className="text-zinc-500">/ license</span>
-                                </div>
-
-                                {/* Tombol CTA Menyala */}
-                                <Button className="w-full rounded-full bg-linear-to-r from-cyan-500 to-blue-500 text-white hover:from-cyan-400 hover:to-blue-400 h-12 border-0 shadow-lg shadow-cyan-500/20 font-semibold">
-                                    Beli Paket Komplit 🚀
-                                </Button>
-
-                                <ul className="mt-8 space-y-4 text-sm text-zinc-200">
-                                    <li className="flex items-center gap-3">
-                                        <div className="rounded-full bg-cyan-500/20 p-1"><Check className="h-3 w-3 text-cyan-400" /></div>
-                                        <span className="font-medium">Semua Fitur Indie Hacker</span>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <div className="rounded-full bg-cyan-500/20 p-1"><Check className="h-3 w-3 text-cyan-400" /></div>
-                                        <span className="font-medium">Figma Design System (.fig)</span>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <div className="rounded-full bg-cyan-500/20 p-1"><Check className="h-3 w-3 text-cyan-400" /></div>
-                                        <span className="font-medium">Prioritas Support via Discord</span>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <div className="rounded-full bg-cyan-500/20 p-1"><Check className="h-3 w-3 text-cyan-400" /></div>
-                                        <span className="font-medium">Multi-Project License</span>
-                                    </li>
-                                    <li className="flex items-center gap-3">
-                                        <div className="rounded-full bg-cyan-500/20 p-1"><Check className="h-3 w-3 text-cyan-400" /></div>
-                                        <span className="font-medium">Setup Consultation (30 min)</span>
-                                    </li>
-                                </ul>
-                            </div>
-                        </RevealOnScroll>
+                        {/* Money Back Guarantee (Trust Signal) */}
+                        <div className="mt-16 text-center">
+                            <p className="text-zinc-500 text-sm">
+                                Garansi uang kembali 30 hari jika kode tidak jalan di mesin lokal Anda.
+                                <br className="hidden md:block" /> Tidak ada risiko sama sekali.
+                            </p>
+                        </div>
 
                     </div>
-
-                    {/* Money Back Guarantee (Trust Signal) */}
-                    <div className="mt-16 text-center">
-                        <p className="text-zinc-500 text-sm">
-                            Garansi uang kembali 30 hari jika kode tidak jalan di mesin lokal Anda.
-                            <br className="hidden md:block" /> Tidak ada risiko sama sekali.
-                        </p>
-                    </div>
-
                 </div>
-            </div>
-        </section>
+            </section>
+            <MidtransSnap
+                isOpen={isSnapOpen}
+                onClose={() => setIsSnapOpen(false)}
+                onResult={handlePaymentResult}
+                orderDetails={snapConfig}
+            />
+        </>
     );
 }

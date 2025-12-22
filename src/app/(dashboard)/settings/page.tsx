@@ -4,8 +4,7 @@ import { useState, useRef } from "react";
 import { useTheme } from "next-themes"; // Hook untuk ganti tema
 import {
     User, Lock, Bell, Palette, Camera, Save, Loader2,
-    Moon, Sun, Laptop, ShieldAlert, Check
-} from "lucide-react";
+    Moon, Sun, Laptop, ShieldAlert} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,7 +14,7 @@ import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
@@ -111,7 +110,7 @@ export default function SettingsPage() {
             <div className="flex flex-col md:flex-row gap-8">
 
                 {/* --- SIDEBAR NAVIGATION (TABS) --- */}
-                <aside className="md:w-64 flex-shrink-0">
+                <aside className="md:w-64 shrink-0">
                     <Tabs orientation="vertical" value={activeTab} onValueChange={setActiveTab} className="w-full">
                         <TabsList className="flex flex-col h-auto bg-transparent gap-1 p-0 items-stretch">
                             <TabsTrigger value="profile" className="justify-start px-4 py-3 data-[state=active]:bg-zinc-800 data-[state=active]:text-white text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all cursor-pointer">
@@ -189,7 +188,7 @@ export default function SettingsPage() {
                                             placeholder="Ceritakan sedikit tentang Anda..."
                                             value={profile.bio}
                                             onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-                                            className="bg-black/40 border-white/10 text-white focus-visible:ring-cyan-500/50 min-h-[100px]"
+                                            className="bg-black/40 border-white/10 text-white focus-visible:ring-cyan-500/50 min-h-25"
                                         />
                                     </div>
                                 </div>

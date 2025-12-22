@@ -7,12 +7,18 @@ import { ArrowRight, Rocket } from "lucide-react";
 import { RevealOnScroll } from "@/components/ui/reveal-on-scroll";
 
 export function HeroSection() {
+    const getStarted = () => {
+        window.open("#pricing", "_blank");
+    }
+    const getTry = () => {
+        window.open("https://saas-starterkit-eta.vercel.app/dashboard", "_blank");
+    };
     return (
         <section className="max-lg:px-6 w-full relative overflow-hidden max-md:h-170 md:h-180 max-md:overflow-hidden xl:h-screen bg-gray-900 text-white dark:bg-black m-auto py-12">
 
             <div className="absolute bottom-0 left-0 right-0 w-full h-1/3 z-2 max-lg:hidden">
                 <RevealOnScroll delay={0.8} width="100%">
-                    <Image src={"/src/images/illustration/neon-wave.png"} unoptimized loading="eager" alt="login illustration" width={2048} height={959} className="w-full mx-auto h-auto opacity-20 bg-blend-screen bg-cover bg-no-repeat bg-center bg-fixed" />
+                    <Image src={"/src/images/illustration/neon-wave.png"} unoptimized loading="eager" alt="login illustration" width={2048} height={959} className="w-full mx-auto h-auto opacity-5 bg-blend-screen bg-cover bg-no-repeat bg-center bg-fixed" />
                 </RevealOnScroll>
             </div>
             <RevealOnScroll delay={0} width="100%">
@@ -42,18 +48,18 @@ export function HeroSection() {
 
             <RevealOnScroll delay={0.3} width="100%">
                 <div className="mt-8 md:mt-10 flex flex-col sm:flex-row gap-4 justify-center items-center px-4 md:px-0">
-                    <Button size="lg" className="h-12 md:h-16 w-full sm:w-auto px-8 md:px-12 lg:px-8 text-base rounded-full bg-white text-black hover:bg-zinc-200">
+                    <Button onClick={() => getStarted()} size="lg" className="h-12 md:h-16 w-full sm:w-auto px-8 md:px-12 lg:px-8 text-base rounded-full bg-white text-black hover:bg-zinc-200">
                         Beli Starter Kit - $49
                     </Button>
-                    <Button size="lg" variant="outline" className="h-12 md:h-16 w-full sm:w-auto px-8 md:px-12! lg:px-8 text-base rounded-full border-zinc-800 text-black hover:bg-zinc-900 hover:text-white">
+                    <Button onClick={() => getTry()} size="lg" variant="outline" className="h-12 md:h-16 w-full sm:w-auto px-8 md:px-12! lg:px-8 text-base rounded-full bg-cyan-500 text-black hover:bg-cyan-400 font-bold shadow-[0_0_20px_-5px_rgba(6,182,212,0.4)] cursor-pointer">
                         Lihat Demo Live
                         <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </Button>
                 </div>
             </RevealOnScroll>
-            <div className="md:mt-12 max-md:px-6 z-1 max-md:absolute max-md:-bottom-26 md:-bottom-68  max-lg:left-0 max-lg:right-0 mx-auto w-full md:max-w-2xl lg:max-w-4xl xl:max-w-6xl flex justify-center items-center">
+            <div className="md:mt-12 max-md:px-6 z-3 max-md:absolute max-md:-bottom-26 md:-bottom-68  max-lg:left-0 max-lg:right-0 mx-auto w-full md:max-w-2xl lg:max-w-4xl xl:max-w-6xl flex justify-center items-center">
                 <RevealOnScroll delay={0.1} width="100%">
-                    <Image src="/src/images/illustration/dashboard-preview.png" width={1024} height={768} alt="login illustration" unoptimized loading="eager" className="container max-auto" />
+                    <Image src="/src/images/illustration/dashboard-preview.png" width={1024} height={768} alt="login illustration" unoptimized loading="eager" className="container max-auto rounded-2xl shadow-xl" />
                 </RevealOnScroll>
             </div>
 
