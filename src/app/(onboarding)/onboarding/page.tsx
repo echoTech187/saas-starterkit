@@ -37,7 +37,7 @@ export default function OnboardingPage() {
             </div>
 
             {/* Main Card */}
-            <Card className="w-full max-w-lg bg-zinc-900/80 backdrop-blur-xl border-white/10 shadow-2xl relative overflow-hidden">
+            <Card className="w-full max-w-lg bg-background/80 backdrop-blur-xl border-white/10 shadow-2xl relative overflow-hidden">
 
                 {/* Progress Bar */}
                 <div className="absolute top-0 left-0 w-full h-1 bg-zinc-800">
@@ -71,7 +71,7 @@ export default function OnboardingPage() {
                                     <SelectTrigger className="bg-black border-white/10 text-white">
                                         <SelectValue placeholder="Pilih Role" />
                                     </SelectTrigger>
-                                    <SelectContent className="bg-zinc-900 border-white/10 text-white">
+                                    <SelectContent className="bg-background border-white/10 text-white">
                                         <SelectItem value="Founder">Founder</SelectItem>
                                         <SelectItem value="Developer">Developer</SelectItem>
                                         <SelectItem value="Designer">Product Designer</SelectItem>

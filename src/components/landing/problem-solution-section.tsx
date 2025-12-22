@@ -6,7 +6,7 @@ import { RevealOnScroll } from "@/components/ui/reveal-on-scroll";
 
 export function ProblemSolutionSection() {
     return (
-        <section className="bg-gray-900 py-24 md:py-32 overflow-hidden max-lg:px-6">
+        <section className="bg-gray-950 py-24 md:py-32 overflow-hidden max-lg:px-6">
             <div className="container mx-auto px-4 space-y-32 w-full max-w-6xl">
 
                 {/* --- PART 1: THE PROBLEM (Text Left, Image Right) --- */}

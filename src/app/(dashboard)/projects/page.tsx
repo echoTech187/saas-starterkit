@@ -1,129 +1,216 @@
 "use client";
 
-import { Plus, MoreVertical, Pencil, Trash2, Calendar, Search } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+    Search, Plus, MoreVertical,
+    ExternalLink, GitBranch, Clock,
+    Trash2, Settings, Eye
+} from "lucide-react";
+
+
+// 2. IMPORT HOOK
 import { useProjects } from "@/hooks/use-projects";
-import Link from "next/link";
+import { GithubIcon } from "@/components/ui/github-icon";
+import DynamicProjectIcon from "@/lib/dynamic-procted-icon";
+
 
 export default function ProjectsPage() {
-    // Destructure semua logic dari hook
     const {
-        projects, searchTerm, setSearchTerm,
-        isCreateOpen, setIsCreateOpen,
-        isEditOpen, setIsEditOpen,
-        formData, setFormData,
-        openCreateModal, handleCreateSubmit,
-        openEditModal, handleUpdateSubmit, handleDelete
+        searchQuery, setSearchQuery,
+        activeTab, setActiveTab,
+        filteredProjects
     } = useProjects();
 
     return (
         <div className="space-y-8">
-            {/* HEADER */}
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <div>
-                    <h2 className="text-3xl font-bold tracking-tight text-white">Projects</h2>
-                    <p className="text-zinc-400">Kelola semua aplikasi SaaS Anda di satu tempat.</p>
-                </div>
 
-                {/* BUTTON: TRIGGER OPEN MODAL */}
-                <Button onClick={openCreateModal} className="bg-cyan-500 hover:bg-cyan-400 text-black font-bold shadow-[0_0_15px_-3px_rgba(6,182,212,0.4)]">
-                    <Plus className="mr-2 h-4 w-4" /> New Project
-                </Button>
+            {/* HEADER */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold text-white">Projects</h1>
+                    <p className="text-zinc-400 mt-1">Manage and monitor your deployments.</p>
+                </div>
+                <Link href="/projects/new">
+                    <Button className="bg-cyan-500 text-black hover:bg-cyan-400 font-bold shadow-[0_0_15px_-3px_rgba(6,182,212,0.5)] border border-transparent hover:border-cyan-300">
+                        <Plus className="h-4 w-4 mr-2" /> Create Project
+                    </Button>
+                </Link>
             </div>
 
-            {/* SEARCH BAR */}
-            <div className="flex items-center gap-2">
-                <div className="relative flex-1 max-w-sm">
-                    <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
+            {/* TOOLBAR */}
+            <div className="flex flex-col sm:flex-row gap-4 items-center bg-zinc-900/50 p-4 rounded-xl border border-white/5 backdrop-blur-sm">
+                <div className="relative w-full sm:max-w-xs">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
                     <Input
-                        placeholder="Cari project..."
-                        className="pl-9 bg-zinc-900/50 border-white/10 text-white"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        placeholder="Search projects..."
+                        className="pl-9 bg-black/20 border-white/10 text-white placeholder:text-zinc-600 focus-visible:ring-cyan-500/50"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
                     />
                 </div>
+
+                {/* --- FIX 2: TABS STYLING (Active State Hover Fix) --- */}
+                <div className="flex gap-2 w-full sm:w-auto overflow-x-auto">
+                    {["All", "Production", "Development"].map((tab) => {
+                        // Tentukan warna berdasarkan tab
+                        const colorClass = tab === 'Production' ? 'emerald' : tab === 'Development' ? 'amber' : 'cyan';
+                        const isActive = activeTab === tab;
+
+                        return (
+                            <Button
+                                key={tab}
+                                variant={isActive ? "outline" : "ghost"}
+                                className={
+                                    isActive
+                                        // Kalau AKTIF: Set warna border/text/bg DAN paksa hover-nya tetap berwarna (jangan jadi hitam)
+                                        ? `border-${colorClass}-500/30 text-${colorClass}-400 bg-${colorClass}-500/10 hover:bg-${colorClass}-500/20 hover:text-${colorClass}-300 hover:border-${colorClass}-500/50`
+                                        // Kalau TIDAK AKTIF: Standar abu-abu
+                                        : "text-zinc-400 hover:text-white hover:bg-white/5"
+                                }
+                                onClick={() => setActiveTab(tab)}
+                            >
+                                {tab}
+                            </Button>
+                        )
+                    })}
+                </div>
             </div>
 
-            {/* GRID LIST */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {projects.map((project) => (
-                    <Card key={project.id} className="bg-zinc-900/40 border-white/10 hover:border-cyan-500/30 transition-all group relative overflow-hidden">
-                        <div className="absolute inset-0 bg-linear-to-br from-cyan-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-                        <CardHeader className="flex flex-row items-start justify-between pb-2">
-                            <div>
-                                <CardTitle className="text-lg font-semibold text-white"><Link href={`/projects/${project.id}`}>{project.name}</Link></CardTitle>
-                                <CardDescription className="text-zinc-500">{project.domain}</CardDescription>
+            {/* GRID */}
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+                {filteredProjects.length === 0 ? (
+                    <div className="col-span-full text-center py-20 bg-zinc-900/30 rounded-xl border border-white/5">
+                        <Search className="h-10 w-10 text-zinc-600 mx-auto mb-3" />
+                        <p className="text-zinc-400">No projects found matching &quot;<span className="text-white font-semibold">{searchQuery}</span>&quot;</p>
+                        <Button variant="link" onClick={() => { setSearchQuery(""); setActiveTab("All") }} className="text-cyan-400">Clear filters</Button>
+                    </div>
+                ) : (
+                    filteredProjects.map((project) => (
+                        <div
+                            key={project.id}
+                            className="group relative overflow-hidden rounded-xl p-px transition-all hover:scale-[1.01]"
+                        >
+                            <div className={`absolute inset-[-1000%] animate-spin-slow opacity-0 transition-opacity duration-500 group-hover:opacity-100 ${project.status === 'Live' ? 'bg-[conic-gradient(from_90deg_at_50%_50%,#00000000_0%,#00000000_50%,#10b981_100%)]' :
+                                project.status === 'Building' ? 'bg-[conic-gradient(from_90deg_at_50%_50%,#00000000_0%,#00000000_50%,#f59e0b_100%)]' :
+                                    'bg-[conic-gradient(from_90deg_at_50%_50%,#00000000_0%,#00000000_50%,#71717a_100%)]'
+                                }`} />
+
+                            <div className="relative flex flex-col h-full w-full rounded-xl bg-zinc-900 border border-white/10 group-hover:border-transparent transition-colors">
+
+                                <div className="p-6 pb-4 flex items-start justify-between">
+                                    <div className="flex gap-4">
+                                        <div className={`h-12 w-12 rounded-lg flex items-center justify-center border border-white/10 shadow-inner transition-all group-hover:scale-110 ${project.status === 'Live' ? 'bg-emerald-500/10 border-emerald-500/20' :
+                                            project.status === 'Building' ? 'bg-amber-500/10 border-amber-500/20' : 'bg-zinc-800'
+                                            }`}>
+                                            <DynamicProjectIcon name={project.iconName} className="h-5 w-5 text-white" />
+                                        </div>
+                                        <div>
+                                            <Link href={`/projects/${project.id}`} className="text-lg font-semibold text-white group-hover:text-cyan-400 transition-colors">
+                                                {project.name}
+                                            </Link>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <a href="#" className="text-xs text-zinc-500 hover:text-white flex items-center gap-1">
+                                                    <GithubIcon className="h-3 w-3" /> {project.repo}
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <Badge variant="outline" className={`border-0 ${project.status === 'Live' ? 'bg-emerald-500/10 text-emerald-400' :
+                                        project.status === 'Building' ? 'bg-amber-500/10 text-amber-400 animate-pulse' :
+                                            'bg-zinc-500/10 text-zinc-400'
+                                        }`}>
+                                        <div className={`h-1.5 w-1.5 rounded-full mr-2 ${project.statusColor}`} />
+                                        {project.status}
+                                    </Badge>
+                                </div>
+
+                                <div className="px-6 pb-6 flex-1">
+                                    <p className="text-sm text-zinc-400 line-clamp-2 group-hover:text-zinc-300 transition-colors">
+                                        {project.description}
+                                    </p>
+                                </div>
+
+                                <div className="px-6 py-4 border-t border-white/5 bg-black/20 rounded-b-xl flex items-center justify-between text-xs text-zinc-500">
+                                    <div className="flex items-center gap-4">
+                                        <span className="flex items-center gap-1.5">
+                                            <GitBranch className="h-3.5 w-3.5" />
+                                            {project.branch}
+                                        </span>
+                                        <span className="flex items-center gap-1.5">
+                                            <Clock className="h-3.5 w-3.5" />
+                                            {project.lastDeploy}
+                                        </span>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        {project.url !== "-" && (
+                                            <a href={project.url} target="_blank" className="p-2 rounded-md hover:bg-white/10 hover:text-white transition-colors">
+                                                <ExternalLink className="h-4 w-4" />
+                                            </a>
+                                        )}
+
+                                        {/* --- FIX 1: DROPDOWN ACTION CLICKS --- */}
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                                <Button variant="ghost" className="h-8 w-8 p-0 hover:bg-white/10 hover:text-white">
+                                                    <span className="sr-only">Open menu</span>
+                                                    <MoreVertical className="h-4 w-4" />
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="end" className="w-48 bg-zinc-950 border-white/10 text-zinc-200">
+                                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+
+                                                {/* Action 1: View Details (Link) */}
+                                                <DropdownMenuItem asChild>
+                                                    <Link
+                                                        href={`/projects/${project.id}`}
+                                                        className="cursor-pointer flex items-center w-full focus:bg-white/10"
+                                                    >
+                                                        <Eye className="mr-2 h-4 w-4" /> View Details
+                                                    </Link>
+                                                </DropdownMenuItem>
+
+                                                {/* Action 2: Settings (Link) */}
+                                                <DropdownMenuItem asChild>
+                                                    <Link
+                                                        href={`/projects/${project.id}?tab=settings`}
+                                                        className="cursor-pointer flex items-center w-full focus:bg-white/10"
+                                                    >
+                                                        <Settings className="mr-2 h-4 w-4" /> Project Settings
+                                                    </Link>
+                                                </DropdownMenuItem>
+
+                                                <DropdownMenuSeparator className="bg-white/10" />
+
+                                                {/* Action 3: Delete (Button onClick) */}
+                                                <DropdownMenuItem
+                                                    className="text-red-400 focus:text-red-400 cursor-pointer focus:bg-red-500/10"
+                                                    onClick={() => alert(`Delete functionality for ${project.name} coming soon!`)}
+                                                >
+                                                    <Trash2 className="mr-2 h-4 w-4" /> Delete Project
+                                                </DropdownMenuItem>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+
+                                    </div>
+                                </div>
                             </div>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0 text-zinc-400 hover:text-white hover:bg-white/10">
-                                        <MoreVertical className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="bg-zinc-900 border-white/10 text-white">
-                                    <DropdownMenuItem onClick={() => openEditModal(project)} className="cursor-pointer">
-                                        <Pencil className="mr-2 h-4 w-4" /> Edit
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem onClick={() => handleDelete(project.id)} className="text-red-400 cursor-pointer">
-                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="flex gap-2">
-                                <Badge variant="outline" className={`border-white/10 ${project.status === "Active" ? "text-emerald-400 bg-emerald-400/10" : "text-zinc-500"}`}>{project.status}</Badge>
-                                <Badge variant="outline" className="border-white/10 text-blue-400 bg-blue-400/10">{project.framework}</Badge>
-                            </div>
-                        </CardContent>
-                        <CardFooter className="border-t border-white/5 pt-4">
-                            <div className="flex items-center text-xs text-zinc-500"><Calendar className="mr-1 h-3 w-3" /> Updated {project.updatedAt}</div>
-                        </CardFooter>
-                    </Card>
-                ))}
+                        </div>
+                    ))
+                )}
             </div>
-
-            {/* --- MODALS DIKENDALIKAN HOOK --- */}
-
-            {/* CREATE MODAL */}
-            <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-                <DialogContent className="bg-zinc-900 border-white/10 text-white">
-                    <DialogHeader><DialogTitle>Buat Project Baru</DialogTitle></DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label className="text-right text-zinc-300">Name</Label>
-                            <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="col-span-3 bg-black border-white/10 text-white" />
-                        </div>
-                        <div className="grid grid-cols-4 items-center gap-4">
-                            <Label className="text-right text-zinc-300">Domain</Label>
-                            <Input value={formData.domain} onChange={(e) => setFormData({ ...formData, domain: e.target.value })} className="col-span-3 bg-black border-white/10 text-white" />
-                        </div>
-                    </div>
-                    <DialogFooter>
-                        <Button onClick={handleCreateSubmit} className="bg-cyan-500 text-black">Simpan</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
-
-            {/* EDIT MODAL */}
-            <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                <DialogContent className="bg-zinc-900 border-white/10 text-white">
-                    <DialogHeader><DialogTitle>Edit Project</DialogTitle></DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <Input value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} className="bg-black border-white/10 text-white" />
-                        <Input value={formData.domain} onChange={(e) => setFormData({ ...formData, domain: e.target.value })} className="bg-black border-white/10 text-white" />
-                    </div>
-                    <DialogFooter>
-                        <Button onClick={handleUpdateSubmit} className="bg-cyan-500 text-black">Update</Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
         </div>
     );
 }

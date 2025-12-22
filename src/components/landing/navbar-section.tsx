@@ -35,7 +35,7 @@ const navigationData = [
 export default function NavbarSection() {
 
     return (
-        <header className='bg-gray-800 sticky top-0 z-50'>
+        <header className='bg-gray-900 sticky top-0 z-50'>
             <div className='relative container mx-auto flex max-w-7xl items-center justify-between max-md:gap-1 gap-4 px-6 py-6 max-md:px-6 max-md:py-4'>
                 <Drawer direction="left">
                     <DrawerTrigger className='md:hidden bg-transparent' asChild>

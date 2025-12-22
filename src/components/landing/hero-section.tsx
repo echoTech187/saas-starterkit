@@ -8,7 +8,7 @@ import { RevealOnScroll } from "@/components/ui/reveal-on-scroll";
 
 export function HeroSection() {
     return (
-        <section className="max-lg:px-6 w-full relative overflow-hidden max-md:h-170 md:h-180 max-md:overflow-hidden xl:h-screen bg-gray-800 text-white dark:bg-black m-auto py-12">
+        <section className="max-lg:px-6 w-full relative overflow-hidden max-md:h-170 md:h-180 max-md:overflow-hidden xl:h-screen bg-gray-900 text-white dark:bg-black m-auto py-12">
 
             <div className="absolute bottom-0 left-0 right-0 w-full h-1/3 z-2 max-lg:hidden">
                 <RevealOnScroll delay={0.8} width="100%">

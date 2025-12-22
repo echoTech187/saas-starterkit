@@ -1,313 +1,392 @@
 "use client";
 
+import { useState, useRef } from "react";
+import { useTheme } from "next-themes"; // Hook untuk ganti tema
+import {
+    User, Lock, Bell, Palette, Camera, Save, Loader2,
+    Moon, Sun, Laptop, ShieldAlert, Check
+} from "lucide-react";
+
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-
-import { useSettings } from "@/hooks/use-settings";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { MoreHorizontal, Mail, Trash2, UserPlus, Loader2, CreditCard } from "lucide-react";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useTeam } from "@/hooks/use-team"; // Import Hook Baru
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Switch } from "@radix-ui/react-switch";
+import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 export default function SettingsPage() {
-    const {
-        isLoading, profile, passwords,
-        handleProfileChange, handlePasswordChange,
-        handleSaveProfile, handleUpdatePassword,
-        midtrans, handleMidtransChange, handleSaveMidtrans
-    } = useSettings();
+    const [isLoading, setIsLoading] = useState(false);
+    const [activeTab, setActiveTab] = useState("profile");
+
+    // --- STATE FORME & LOGIC ---
+    const { setTheme, theme } = useTheme(); // Hook Next-Themes
+
+    // State Profile
+    const [profile, setProfile] = useState({
+        name: "Agus Santoso",
+        bio: "",
+        avatarUrl: "/avatars/01.png"
+    });
+
+    // State Password
+    const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
+
+    // Ref untuk Input File (Upload Avatar)
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // --- HANDLERS ---
+
+    // 1. Handler Save Profile
+    const handleSaveProfile = () => {
+        setIsLoading(true);
+        // Simulasi API call
+        setTimeout(() => {
+            setIsLoading(false);
+            toast.success("Profil berhasil diperbarui!");
+        }, 1500);
+    };
+
+    // 2. Handler Update Password
+    const handleUpdatePassword = () => {
+        if (!passwords.current || !passwords.new || !passwords.confirm) {
+            toast.error("Mohon lengkapi semua field password.");
+            return;
+        }
+        if (passwords.new !== passwords.confirm) {
+            toast.error("Password baru dan konfirmasi tidak cocok.");
+            return;
+        }
+
+        setIsLoading(true);
+        setTimeout(() => {
+            setIsLoading(false);
+            setPasswords({ current: "", new: "", confirm: "" }); // Reset form
+            toast.success("Password berhasil diubah!");
+        }, 1500);
+    };
+
+    // 3. Handler Delete Account
+    const handleDeleteAccount = () => {
+        toast.error("Akun Anda telah dihapus. Mengarahkan ke halaman login...", {
+            duration: 3000,
+        });
+        // Logic redirect logout disini
+        // router.push("/login")
+    };
+
+    // 4. Handler Upload Avatar (Click Trigger)
+    const triggerFileInput = () => {
+        fileInputRef.current?.click();
+    };
+
+    // 5. Handler File Change (Preview Image)
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            // Simulasi preview local
+            const objectUrl = URL.createObjectURL(file);
+            setProfile({ ...profile, avatarUrl: objectUrl });
+            toast.success("Foto profil diperbarui (Preview Only)");
+        }
+    };
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 pb-20">
+
+            {/* HEADER */}
             <div>
-                <h2 className="text-3xl font-bold tracking-tight text-white">Settings</h2>
+                <h1 className="text-3xl font-bold text-white tracking-tight">Account Settings</h1>
+                <p className="text-zinc-400 mt-2">Kelola profil, keamanan, dan preferensi aplikasi Anda.</p>
             </div>
 
-            <Tabs defaultValue="general" className="space-y-4">
-                <TabsList className="bg-zinc-900 border border-white/10">
-                    <TabsTrigger value="general" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-black text-zinc-400">General</TabsTrigger>
-                    <TabsTrigger value="security" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-black text-zinc-400">Security</TabsTrigger>
-                    <TabsTrigger value="payments" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-black text-zinc-400">Payments</TabsTrigger>
-                    <TabsTrigger value="team" className="data-[state=active]:bg-cyan-500 data-[state=active]:text-black text-zinc-400">Team</TabsTrigger>
-                </TabsList>
+            <Separator className="bg-white/10" />
 
-                {/* TAB: GENERAL */}
-                <TabsContent value="general">
-                    <Card className="bg-zinc-900/50 border-white/10">
-                        <CardHeader><CardTitle className="text-white">Profile</CardTitle></CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label className="text-zinc-300">Full Name</Label>
-                                <Input value={profile.fullName} onChange={(e) => handleProfileChange("fullName", e.target.value)} className="bg-black border-white/10 text-white" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-zinc-300">Email</Label>
-                                <Input value={profile.email} onChange={(e) => handleProfileChange("email", e.target.value)} className="bg-black border-white/10 text-white" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-zinc-300">Bio</Label>
-                                <Input value={profile.bio} onChange={(e) => handleProfileChange("bio", e.target.value)} className="bg-black border-white/10 text-white" />
-                            </div>
-                        </CardContent>
-                        <CardFooter>
-                            <Button onClick={handleSaveProfile} disabled={isLoading} className="bg-cyan-500 text-black hover:bg-cyan-400">
-                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Save Changes"}
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                </TabsContent>
+            <div className="flex flex-col md:flex-row gap-8">
 
-                {/* TAB: SECURITY */}
-                <TabsContent value="security">
-                    <Card className="bg-zinc-900/50 border-white/10">
-                        <CardHeader><CardTitle className="text-white">Password</CardTitle></CardHeader>
-                        <CardContent className="space-y-4">
-                            <div className="space-y-2">
-                                <Label className="text-zinc-300">Current Password</Label>
-                                <Input type="password" value={passwords.current} onChange={(e) => handlePasswordChange("current", e.target.value)} className="bg-black border-white/10 text-white" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-zinc-300">New Password</Label>
-                                <Input type="password" value={passwords.new} onChange={(e) => handlePasswordChange("new", e.target.value)} className="bg-black border-white/10 text-white" />
-                            </div>
-                        </CardContent>
-                        <CardFooter>
-                            <Button onClick={handleUpdatePassword} disabled={isLoading} className="bg-cyan-500 text-black hover:bg-cyan-400">
-                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Update Password"}
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                </TabsContent>
-                <TabsContent value="payments">
-                    <div className="grid gap-6">
+                {/* --- SIDEBAR NAVIGATION (TABS) --- */}
+                <aside className="md:w-64 flex-shrink-0">
+                    <Tabs orientation="vertical" value={activeTab} onValueChange={setActiveTab} className="w-full">
+                        <TabsList className="flex flex-col h-auto bg-transparent gap-1 p-0 items-stretch">
+                            <TabsTrigger value="profile" className="justify-start px-4 py-3 data-[state=active]:bg-zinc-800 data-[state=active]:text-white text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all cursor-pointer">
+                                <User className="w-4 h-4 mr-3" /> Profile
+                            </TabsTrigger>
+                            <TabsTrigger value="account" className="justify-start px-4 py-3 data-[state=active]:bg-zinc-800 data-[state=active]:text-white text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all cursor-pointer">
+                                <Lock className="w-4 h-4 mr-3" /> Security
+                            </TabsTrigger>
+                            <TabsTrigger value="appearance" className="justify-start px-4 py-3 data-[state=active]:bg-zinc-800 data-[state=active]:text-white text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all cursor-pointer">
+                                <Palette className="w-4 h-4 mr-3" /> Appearance
+                            </TabsTrigger>
+                            <TabsTrigger value="notifications" className="justify-start px-4 py-3 data-[state=active]:bg-zinc-800 data-[state=active]:text-white text-zinc-400 hover:text-white hover:bg-white/5 rounded-lg transition-all cursor-pointer">
+                                <Bell className="w-4 h-4 mr-3" /> Notifications
+                            </TabsTrigger>
+                        </TabsList>
+                    </Tabs>
+                </aside>
 
-                        {/* Kartu Status */}
-                        <Alert className={`border-l-4 ${midtrans.isProduction ? 'border-l-emerald-500 bg-emerald-500/10 border-emerald-500/20' : 'border-l-amber-500 bg-amber-500/10 border-amber-500/20'}`}>
-                            <CreditCard className={`h-4 w-4 ${midtrans.isProduction ? 'text-emerald-400' : 'text-amber-400'}`} />
-                            <AlertTitle className={`ml-2 ${midtrans.isProduction ? 'text-emerald-400' : 'text-amber-400'}`}>
-                                {midtrans.isProduction ? 'Production Mode Active' : 'Sandbox Mode Active'}
-                            </AlertTitle>
-                            <AlertDescription className="ml-2 text-zinc-400">
-                                {midtrans.isProduction
-                                    ? 'Transaksi yang terjadi adalah REAL dan akan memotong saldo kustomer.'
-                                    : 'Transaksi hanya simulasi (Dummy). Tidak ada uang asli yang diproses.'}
-                            </AlertDescription>
-                        </Alert>
+                {/* --- CONTENT AREA --- */}
+                <div className="flex-1 max-w-2xl">
 
+                    {/* === TAB: PROFILE === */}
+                    <div className={activeTab === "profile" ? "space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500" : "hidden"}>
                         <Card className="bg-zinc-900/50 border-white/10">
                             <CardHeader>
-                                <div className="flex items-center justify-between">
-                                    <div>
-                                        <CardTitle className="text-white">Midtrans Configuration</CardTitle>
-                                        <CardDescription className="text-zinc-400">
-                                            Masukkan API Key dari dashboard Midtrans Anda.
-                                        </CardDescription>
-                                    </div>
-                                    {/* Logo Midtrans Kecil (Opsional) */}
-                                    <div className="px-3 py-1 bg-white rounded-md">
-                                        <span className="text-blue-900 font-bold text-xs tracking-widest">midtrans</span>
-                                    </div>
-                                </div>
+                                <CardTitle className="text-white">Public Profile</CardTitle>
+                                <CardDescription className="text-zinc-400">Informasi ini akan terlihat oleh anggota tim Anda.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6">
-
-                                {/* Toggle Production */}
-                                <div className="flex items-center justify-between rounded-lg border border-white/10 bg-black/40 p-4">
-                                    <div className="space-y-0.5">
-                                        <Label className="text-base text-white">Production Mode</Label>
-                                        <p className="text-xs text-zinc-500">
-                                            Aktifkan jika Anda sudah siap menerima pembayaran asli.
-                                        </p>
-                                    </div>
-                                    <Switch
-                                        checked={midtrans.isProduction}
-                                        onCheckedChange={(checked) => handleMidtransChange("isProduction", checked)}
-                                        className="data-[state=checked]:bg-emerald-500"
-                                    />
-                                </div>
-
-                                {/* Inputs */}
-                                <div className="grid gap-4">
-                                    <div className="space-y-2">
-                                        <Label className="text-zinc-300">Merchant ID</Label>
-                                        <Input
-                                            value={midtrans.merchantId}
-                                            onChange={(e) => handleMidtransChange("merchantId", e.target.value)}
-                                            className="bg-black border-white/10 text-white font-mono"
-                                            placeholder="G-xxxxxxxx"
+                                {/* Avatar Upload Interaktif */}
+                                <div className="flex items-center gap-6">
+                                    <div className="relative group cursor-pointer" onClick={triggerFileInput}>
+                                        <Avatar className="w-20 h-20 border-2 border-white/10 group-hover:border-cyan-500 transition-colors">
+                                            <AvatarImage src={profile.avatarUrl} className="object-cover" />
+                                            <AvatarFallback className="bg-zinc-800 text-zinc-400 text-xl">AG</AvatarFallback>
+                                        </Avatar>
+                                        <div className="absolute inset-0 bg-black/60 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Camera className="w-6 h-6 text-white" />
+                                        </div>
+                                        {/* Hidden Input File */}
+                                        <input
+                                            type="file"
+                                            ref={fileInputRef}
+                                            className="hidden"
+                                            accept="image/*"
+                                            onChange={handleFileChange}
                                         />
                                     </div>
-                                    <div className="grid md:grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <Label className="text-zinc-300">Client Key</Label>
-                                            <Input
-                                                value={midtrans.clientKey}
-                                                onChange={(e) => handleMidtransChange("clientKey", e.target.value)}
-                                                className="bg-black border-white/10 text-white font-mono"
-                                                type="password"
-                                                placeholder="SB-Mid-client-..."
-                                            />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <Label className="text-zinc-300">Server Key</Label>
-                                            <Input
-                                                value={midtrans.serverKey}
-                                                onChange={(e) => handleMidtransChange("serverKey", e.target.value)}
-                                                className="bg-black border-white/10 text-white font-mono"
-                                                type="password"
-                                                placeholder="SB-Mid-server-..."
-                                            />
-                                        </div>
+                                    <div className="space-y-1">
+                                        <h3 className="font-medium text-white">Profile Picture</h3>
+                                        <p className="text-xs text-zinc-500">Klik gambar untuk upload. Max 2MB.</p>
+                                    </div>
+                                </div>
+
+                                {/* Form Inputs Editable */}
+                                <div className="grid gap-4">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="name" className="text-zinc-300">Display Name</Label>
+                                        <Input
+                                            id="name"
+                                            value={profile.name}
+                                            onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                                            className="bg-black/40 border-white/10 text-white focus-visible:ring-cyan-500/50"
+                                        />
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="email" className="text-zinc-300">Email Address</Label>
+                                        <Input id="email" defaultValue="agus@nusantara.id" disabled className="bg-zinc-900/50 border-white/5 text-zinc-500 cursor-not-allowed" />
+                                        <p className="text-[10px] text-zinc-500">Email tidak dapat diubah (Terikat akun SSO).</p>
+                                    </div>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="bio" className="text-zinc-300">Bio</Label>
+                                        <Textarea
+                                            id="bio"
+                                            placeholder="Ceritakan sedikit tentang Anda..."
+                                            value={profile.bio}
+                                            onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                                            className="bg-black/40 border-white/10 text-white focus-visible:ring-cyan-500/50 min-h-[100px]"
+                                        />
                                     </div>
                                 </div>
                             </CardContent>
-                            <CardFooter className="justify-between border-t border-white/5 pt-6">
-                                <p className="text-xs text-zinc-500">
-                                    Jangan bagikan Server Key Anda kepada siapapun.
-                                </p>
-                                <Button onClick={handleSaveMidtrans} disabled={isLoading} className="bg-cyan-500 text-black hover:bg-cyan-400">
-                                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Save Configuration"}
+                            <CardFooter className="border-t border-white/5 py-4">
+                                <Button onClick={handleSaveProfile} disabled={isLoading} className="bg-cyan-600 hover:bg-cyan-500 text-white ml-auto">
+                                    {isLoading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />} Save Changes
                                 </Button>
                             </CardFooter>
                         </Card>
                     </div>
-                </TabsContent>
-                <TabsContent value="team">
-                    <TeamTabContent />
-                </TabsContent>
-            </Tabs>
+
+                    {/* === TAB: SECURITY (ACCOUNT) === */}
+                    <div className={activeTab === "account" ? "space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500" : "hidden"}>
+                        <Card className="bg-zinc-900/50 border-white/10">
+                            <CardHeader>
+                                <CardTitle className="text-white">Password & Security</CardTitle>
+                                <CardDescription className="text-zinc-400">Kelola keamanan akun Anda.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <div className="grid gap-2">
+                                    <Label className="text-zinc-300">Current Password</Label>
+                                    <Input
+                                        type="password"
+                                        value={passwords.current}
+                                        onChange={(e) => setPasswords({ ...passwords, current: e.target.value })}
+                                        className="bg-black/40 border-white/10 text-white focus-visible:ring-cyan-500/50"
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label className="text-zinc-300">New Password</Label>
+                                    <Input
+                                        type="password"
+                                        value={passwords.new}
+                                        onChange={(e) => setPasswords({ ...passwords, new: e.target.value })}
+                                        className="bg-black/40 border-white/10 text-white focus-visible:ring-cyan-500/50"
+                                    />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label className="text-zinc-300">Confirm Password</Label>
+                                    <Input
+                                        type="password"
+                                        value={passwords.confirm}
+                                        onChange={(e) => setPasswords({ ...passwords, confirm: e.target.value })}
+                                        className="bg-black/40 border-white/10 text-white focus-visible:ring-cyan-500/50"
+                                    />
+                                </div>
+                            </CardContent>
+                            <CardFooter className="border-t border-white/5 py-4">
+                                <Button
+                                    onClick={handleUpdatePassword}
+                                    disabled={isLoading}
+                                    className="bg-white/10 hover:bg-white/20 text-white border border-white/10 ml-auto"
+                                >
+                                    {isLoading && <Loader2 className="w-4 h-4 animate-spin mr-2" />} Update Password
+                                </Button>
+                            </CardFooter>
+                        </Card>
+
+                        {/* Danger Zone: Delete Account */}
+                        <Card className="bg-red-950/10 border-red-900/30 pb-0">
+                            <CardHeader>
+                                <CardTitle className="text-red-400 flex items-center gap-2">
+                                    <ShieldAlert className="w-5 h-5" /> Delete Account
+                                </CardTitle>
+                                <CardDescription className="text-zinc-500">
+                                    Menghapus akun Anda secara permanen. Tindakan ini tidak dapat dibatalkan.
+                                </CardDescription>
+                            </CardHeader>
+                            <CardFooter className="py-4 bg-red-950/20 border-t border-red-900/20">
+                                {/* ALERT DIALOG DELETE */}
+                                <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                        <Button variant="destructive" className="bg-red-600 hover:bg-red-700 text-white ml-auto">
+                                            Delete My Account
+                                        </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent className="bg-zinc-950 border-red-900/50 text-white">
+                                        <AlertDialogHeader>
+                                            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                                            <AlertDialogDescription className="text-zinc-400">
+                                                Akun dan semua data project Anda akan dihapus secara permanen dari server kami.
+                                            </AlertDialogDescription>
+                                        </AlertDialogHeader>
+                                        <AlertDialogFooter>
+                                            <AlertDialogCancel className="bg-transparent border-white/10 hover:bg-white/10 text-white hover:text-white">Cancel</AlertDialogCancel>
+                                            <AlertDialogAction onClick={handleDeleteAccount} className="bg-red-600 hover:bg-red-700 text-white border-0">
+                                                Yes, Delete Account
+                                            </AlertDialogAction>
+                                        </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                </AlertDialog>
+                            </CardFooter>
+                        </Card>
+                    </div>
+
+                    {/* === TAB: APPEARANCE (FUNGSI THEME AKTIF) === */}
+                    <div className={activeTab === "appearance" ? "space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500" : "hidden"}>
+                        <Card className="bg-zinc-900/50 border-white/10">
+                            <CardHeader>
+                                <CardTitle className="text-white">Theme Preferences</CardTitle>
+                                <CardDescription className="text-zinc-400">Pilih tampilan antarmuka aplikasi.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="grid gap-6 pt-2">
+                                <div className="flex items-center justify-between">
+                                    <div className="space-y-1">
+                                        <div className="font-medium text-white">Interface Theme</div>
+                                        <div className="text-xs text-zinc-500">Pilih skema warna favorit Anda.</div>
+                                    </div>
+
+                                    {/* THEME TOGGLE BUTTONS */}
+                                    <div className="flex bg-black/40 p-1 rounded-lg border border-white/10">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setTheme("dark")}
+                                            className={`h-8 w-8 p-0 rounded-md transition-all ${theme === 'dark' ? 'bg-zinc-800 text-cyan-400 shadow-sm' : 'text-zinc-500 hover:text-white'}`}
+                                        >
+                                            <Moon className="w-4 h-4" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setTheme("light")}
+                                            className={`h-8 w-8 p-0 rounded-md transition-all ${theme === 'light' ? 'bg-zinc-200 text-cyan-600 shadow-sm' : 'text-zinc-500 hover:text-white'}`}
+                                        >
+                                            <Sun className="w-4 h-4" />
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => setTheme("system")}
+                                            className={`h-8 w-8 p-0 rounded-md transition-all ${theme === 'system' ? 'bg-zinc-800 text-cyan-400 shadow-sm' : 'text-zinc-500 hover:text-white'}`}
+                                        >
+                                            <Laptop className="w-4 h-4" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                    {/* === TAB: NOTIFICATIONS === */}
+                    <div className={activeTab === "notifications" ? "space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500" : "hidden"}>
+                        <Card className="bg-zinc-900/50 border-white/10">
+                            <CardHeader>
+                                <CardTitle className="text-white">Email Notifications</CardTitle>
+                                <CardDescription className="text-zinc-400">Pilih notifikasi apa saja yang ingin Anda terima.</CardDescription>
+                            </CardHeader>
+                            <CardContent className="space-y-6">
+                                <NotificationSwitch
+                                    title="Deployment Status"
+                                    desc="Get emails when a build finishes or fails."
+                                    defaultChecked={true}
+                                />
+                                <Separator className="bg-white/5" />
+                                <NotificationSwitch
+                                    title="Billing Alerts"
+                                    desc="Receive invoices and payment issues."
+                                    defaultChecked={true}
+                                />
+                                <Separator className="bg-white/5" />
+                                <NotificationSwitch
+                                    title="Team Activity"
+                                    desc="When someone joins or leaves your team."
+                                    defaultChecked={false}
+                                />
+                            </CardContent>
+                        </Card>
+                    </div>
+
+                </div>
+            </div>
         </div>
     );
 }
 
-function TeamTabContent() {
-    const {
-        members, isLoading,
-        isInviteOpen, setIsInviteOpen,
-        inviteEmail, setInviteEmail,
-        inviteRole, setInviteRole,
-        handleInviteMember, handleRemoveMember, handleResendInvite
-    } = useTeam();
+// Helper Component untuk Switch Notifikasi
+function NotificationSwitch({ title, desc, defaultChecked }: { title: string, desc: string, defaultChecked: boolean }) {
+    const [checked, setChecked] = useState(defaultChecked);
+
+    const handleChange = (val: boolean) => {
+        setChecked(val);
+        toast.success(`${title} ${val ? "enabled" : "disabled"}`);
+    }
 
     return (
-        <Card className="bg-zinc-900/50 border-white/10">
-            <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                    <CardTitle className="text-white">Team Members</CardTitle>
-                    <CardDescription className="text-zinc-400">
-                        Kelola akses dan role anggota tim Anda.
-                    </CardDescription>
-                </div>
-
-                {/* TOMBOL UNDANG ANGGOTA */}
-                <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
-                    <DialogTrigger asChild>
-                        <Button className="bg-cyan-500 text-black hover:bg-cyan-400">
-                            <UserPlus className="mr-2 h-4 w-4" /> Invite Member
-                        </Button>
-                    </DialogTrigger>
-                    <DialogContent className="bg-zinc-900 border-white/10 text-white">
-                        <DialogHeader>
-                            <DialogTitle>Undang Anggota Baru</DialogTitle>
-                            <DialogDescription className="text-zinc-400">
-                                Kirim email undangan untuk bergabung ke tim ini.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <div className="grid gap-4 py-4">
-                            <div className="space-y-2">
-                                <Label className="text-zinc-300">Email Address</Label>
-                                <Input
-                                    placeholder="nama@perusahaan.com"
-                                    className="bg-black border-white/10 text-white"
-                                    value={inviteEmail}
-                                    onChange={(e) => setInviteEmail(e.target.value)}
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <Label className="text-zinc-300">Role</Label>
-                                <Select value={inviteRole} onValueChange={setInviteRole}>
-                                    <SelectTrigger className="bg-black border-white/10 text-white">
-                                        <SelectValue placeholder="Select a role" />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-zinc-900 border-white/10 text-white">
-                                        <SelectItem value="Admin">Admin (Full Access)</SelectItem>
-                                        <SelectItem value="Member">Member (Limited Access)</SelectItem>
-                                        <SelectItem value="Viewer">Viewer (Read Only)</SelectItem>
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                        </div>
-                        <DialogFooter>
-                            <Button onClick={handleInviteMember} disabled={isLoading} className="bg-cyan-500 text-black">
-                                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : "Kirim Undangan"}
-                            </Button>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-            </CardHeader>
-
-            <CardContent>
-                <div className="space-y-6">
-                    {members.map((member) => (
-                        <div key={member.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors">
-                            <div className="flex items-center gap-4">
-                                <Avatar className="h-10 w-10 border border-white/10">
-                                    <AvatarImage src={member.avatar} />
-                                    <AvatarFallback className="bg-cyan-900 text-cyan-200">
-                                        {member.name.substring(0, 2).toUpperCase()}
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="text-sm font-medium text-white leading-none">{member.name}</p>
-                                    <p className="text-sm text-zinc-500 mt-1">{member.email}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-4">
-                                {/* Role Badge */}
-                                <Select defaultValue={member.role} disabled={member.role === "Owner"}>
-                                    <SelectTrigger className="w-27.5 h-8 bg-black/50 border-white/10 text-xs text-white">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent className="bg-zinc-900 border-white/10 text-white">
-                                        <SelectItem value="Owner">Owner</SelectItem>
-                                        <SelectItem value="Admin">Admin</SelectItem>
-                                        <SelectItem value="Member">Member</SelectItem>
-                                    </SelectContent>
-                                </Select>
-
-                                {/* Action Menu */}
-                                {member.role !== "Owner" && (
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-zinc-400 hover:text-white">
-                                                <MoreHorizontal className="h-4 w-4" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end" className="bg-zinc-900 border-white/10 text-white">
-                                            {member.status === "Pending" && (
-                                                <DropdownMenuItem onClick={() => handleResendInvite(member.email)} className="cursor-pointer">
-                                                    <Mail className="mr-2 h-4 w-4" /> Resend Invite
-                                                </DropdownMenuItem>
-                                            )}
-                                            <DropdownMenuItem onClick={() => handleRemoveMember(member.id)} className="text-red-400 focus:text-red-400 cursor-pointer">
-                                                <Trash2 className="mr-2 h-4 w-4" /> Remove User
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </CardContent>
-        </Card>
-    );
+        <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+                <Label className="text-base text-zinc-200">{title}</Label>
+                <p className="text-xs text-zinc-500">{desc}</p>
+            </div>
+            <Switch
+                checked={checked}
+                onCheckedChange={handleChange}
+                className="data-[state=checked]:bg-cyan-600"
+            />
+        </div>
+    )
 }

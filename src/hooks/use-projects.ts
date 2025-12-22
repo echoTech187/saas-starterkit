@@ -1,114 +1,106 @@
-"use client";
+import { useState, useMemo } from "react";
 
-import { useState } from "react";
+// --- 1. Definisi Tipe Data ---
+export interface Project {
+  id: string;
+  name: string;
+  description: string;
+  framework: string;
+  
+  // ✅ GANTI JADI STRING (Nama Icon di Lucide)
+  iconName: string; 
+  
+  status: "Live" | "Building" | "Offline";
+  statusColor: string;
+  repo: string;
+  branch: string;
+  lastDeploy: string;
+  url: string;
+}
 
-// Tipe Data
-export type Project = {
-    id: number;
-    name: string;
-    domain: string;
-    status: "Active" | "Maintenance" | "Archived";
-    framework: string;
-    updatedAt: string;
-};
-
-const initialProjects: Project[] = [
-    { id: 1, name: "Toko Online V2", domain: "toko.com", status: "Active", framework: "Next.js", updatedAt: "2h ago" },
-    { id: 2, name: "Dashboard Admin", domain: "admin.toko.com", status: "Maintenance", framework: "React", updatedAt: "1d ago" },
-    { id: 3, name: "Landing Page Event", domain: "event.id", status: "Archived", framework: "Astro", updatedAt: "1w ago" },
+// --- 2. Data Dummy (Simulasi Database) ---
+const allProjects: Project[] = [
+  {
+    id: "toko-online-v2",
+    name: "Toko Online V2",
+    description: "Next.js e-commerce platform with Stripe integration.",
+    framework: "Next.js",
+    iconName: "Globe", // <-- String: Nanti diload jadi <Globe />
+    status: "Live",
+    statusColor: "bg-emerald-500",
+    repo: "shadcn/toko-online",
+    branch: "main",
+    lastDeploy: "2m ago",
+    url: "https://tokoonline.com"
+  },
+  {
+    id: "backend-api",
+    name: "Backend API Production",
+    description: "Express.js REST API serving mobile and web clients.",
+    framework: "Node.js",
+    iconName: "Server", // <-- String: Nanti diload jadi <Server />
+    status: "Building",
+    statusColor: "bg-amber-500",
+    repo: "shadcn/backend-api",
+    branch: "feat/auth-v2",
+    lastDeploy: "Running...",
+    url: "https://api.tokoonline.com"
+  },
+  {
+    id: "worker-nodes",
+    name: "Worker Nodes",
+    description: "Redis worker for processing background jobs.",
+    framework: "Docker",
+    iconName: "Database", // <-- String
+    status: "Offline",
+    statusColor: "bg-zinc-500",
+    repo: "shadcn/workers",
+    branch: "main",
+    lastDeploy: "5d ago",
+    url: "-"
+  },
+  {
+    id: "admin-dashboard",
+    name: "Admin Dashboard Internal",
+    description: "Internal tool for managing users and orders.",
+    framework: "React",
+    iconName: "Cpu", // <-- String
+    status: "Live",
+    statusColor: "bg-emerald-500",
+    repo: "shadcn/admin-dash",
+    branch: "develop",
+    lastDeploy: "1h ago",
+    url: "https://admin.tokoonline.com"
+  },
 ];
 
+// --- 3. Hook Logic (Tidak Berubah) ---
 export function useProjects() {
-    // --- STATE DATA ---
-    const [projects, setProjects] = useState<Project[]>(initialProjects);
-    const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("All");
 
-    // --- STATE UI (Modal & Form) ---
-    const [isCreateOpen, setIsCreateOpen] = useState(false);
-    const [isEditOpen, setIsEditOpen] = useState(false);
-    const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-    const [formData, setFormData] = useState({ name: "", domain: "" });
+  const filteredProjects = useMemo(() => {
+    return allProjects.filter((project) => {
+      const matchesSearch = 
+        project.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        project.repo.toLowerCase().includes(searchQuery.toLowerCase());
 
-    // --- ACTIONS (LOGIC) ---
+      let matchesTab = true;
+      if (activeTab === "Production") {
+          matchesTab = project.status === "Live";
+      } else if (activeTab === "Development") {
+          matchesTab = project.status === "Building" || project.status === "Offline";
+      }
 
-    // 1. Prepare Create
-    const openCreateModal = () => {
-        setFormData({ name: "", domain: "" });
-        setIsCreateOpen(true);
-    };
+      return matchesSearch && matchesTab;
+    });
+  }, [searchQuery, activeTab]);
 
-    // 2. Submit Create
-    const handleCreateSubmit = () => {
-        const newProject: Project = {
-            id: Date.now(),
-            name: formData.name || "Untitled Project",
-            domain: formData.domain || "pending.domain",
-            status: "Active",
-            framework: "Next.js",
-            updatedAt: "Just now",
-        };
-        setProjects([newProject, ...projects]);
-        setIsCreateOpen(false);
-    };
-
-    // 3. Prepare Edit
-    const openEditModal = (project: Project) => {
-        setSelectedProject(project);
-        setFormData({ name: project.name, domain: project.domain });
-        setIsEditOpen(true);
-    };
-
-    // 4. Submit Update
-    const handleUpdateSubmit = () => {
-        if (!selectedProject) return;
-        setProjects(projects.map(p =>
-            p.id === selectedProject.id
-                ? { ...p, name: formData.name, domain: formData.domain, updatedAt: "Just now" }
-                : p
-        ));
-        setIsEditOpen(false);
-        setSelectedProject(null);
-    };
-
-    // 5. Delete
-    const handleDelete = (id: number) => {
-        if (confirm("Yakin ingin menghapus project ini?")) {
-            setProjects(projects.filter((p) => p.id !== id));
-        }
-    };
-
-    // Filter Logic
-    const filteredProjects = projects.filter(p =>
-        p.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
-
-    const [projectId, setProjectsId] = useState("");
-
-    const handleProjectsId = async (params: { projectid: string }) => {
-        const id = await params.projectid;
-        setProjectsId(id);
-    }
-
-    return {
-        // Data Values
-        projects: filteredProjects,
-        searchTerm,
-        isCreateOpen,
-        isEditOpen,
-        formData,
-        projectId,
-        // State Setters (for Inputs/Dialog binding)
-        setSearchTerm,
-        setIsCreateOpen,
-        setIsEditOpen,
-        setFormData,
-
-        // Actions Handlers
-        openCreateModal,
-        handleCreateSubmit,
-        openEditModal,
-        handleUpdateSubmit,
-        handleDelete,
-        handleProjectsId
-    };
+  return {
+    searchQuery,
+    setSearchQuery,
+    activeTab,
+    setActiveTab,
+    filteredProjects,
+  };
 }
