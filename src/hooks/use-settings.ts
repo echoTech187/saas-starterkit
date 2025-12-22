@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 export function useSettings() {
     const [isLoading, setIsLoading] = useState(false);
@@ -36,7 +37,7 @@ export function useSettings() {
         setIsLoading(true);
         setTimeout(() => {
             console.log("Saving profile:", profile);
-            alert("Profile saved!");
+            toast.success("Profile saved!");
             setIsLoading(false);
         }, 1000);
     };
@@ -45,7 +46,7 @@ export function useSettings() {
         setIsLoading(true);
         setTimeout(() => {
             console.log("Updating password:", passwords);
-            alert("Password updated!");
+            toast.success("Password updated!");
             setPasswords({ current: "", new: "" }); // Reset form
             setIsLoading(false);
         }, 1000);
@@ -57,7 +58,7 @@ export function useSettings() {
         setIsLoading(true);
         setTimeout(() => {
             console.log("Saving Midtrans Config:", midtrans);
-            alert("Konfigurasi Midtrans berhasil disimpan!");
+            toast.success("Konfigurasi Midtrans berhasil disimpan!");
             setIsLoading(false);
         }, 1000);
     };

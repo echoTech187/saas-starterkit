@@ -47,6 +47,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import Image from "next/image";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
 // Data Navigasi (Tetap)
 const data = {
     navMain: [
@@ -81,7 +82,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
     // State untuk Popover agar bisa ditutup manual saat klik item
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
+    const [isLogoutDialogOpen, setIsLogoutDialogOpen] = React.useState(false);
 
+    // Fungsi Konfirmasi Logout
+    const confirmLogout = () => {
+        setIsLogoutDialogOpen(false);
+        toast.success("Berhasil Logout", { description: "Session anda telah berakhir." });
+        router.push("/login");
+    };
     // Handler: Buat Tim Baru
     const handleCreateTeam = () => {
         if (!newTeamName.trim()) {
@@ -111,10 +119,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 description: `Anda sekarang berada di ${newTeam.name}`
             });
         }, 1000);
-    };
-    const handleLogout = () => {
-        toast.success("Berhasil Logout", { description: "Session anda telah berakhir." });
-        router.push("/login"); // Atau ke '/'
     };
     return (
         <>
@@ -196,10 +200,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                         {/* TOMBOL BUAT TIM BARU */}
                                         <Button
                                             variant="ghost"
-                                            onClick={() => {
-                                                setIsPopoverOpen(false); // Tutup popover dulu
-                                                setIsDialogOpen(true);   // Buka modal
-                                            }}
+                                            onClick={() => router.push("/onboarding")}
                                             className="w-full justify-start h-9 text-sm font-normal text-zinc-400 hover:bg-white/10 hover:text-white px-2 mt-2 border-t border-white/5 rounded-none"
                                         >
                                             <div className="mr-2 flex size-5 items-center justify-center rounded-md border border-white/10 bg-zinc-800">
@@ -257,11 +258,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <SidebarMenuItem>
                             <SidebarMenuButton
                                 size="lg"
-                                onClick={handleLogout}
+                                // Ganti onClick langsung dengan membuka dialog
+                                onClick={() => setIsLogoutDialogOpen(true)}
                                 className="data-[state=open]:bg-white/10 data-[state=open]:text-white hover:bg-white/5 hover:text-white text-zinc-400 cursor-pointer group"
                             >
                                 <Avatar className="h-8 w-8 rounded-lg border border-white/10">
-                                    <AvatarImage src="/avatars/shadcn.jpg" alt="@shadcn" />
+                                    <AvatarImage src="" alt="@shadcn" />
                                     <AvatarFallback className="rounded-lg bg-zinc-800 text-zinc-400">CN</AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight ml-2">
@@ -313,6 +315,29 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            {/* --- NEW: LOGOUT CONFIRMATION DIALOG --- */}
+            <AlertDialog open={isLogoutDialogOpen} onOpenChange={setIsLogoutDialogOpen}>
+                <AlertDialogContent className="bg-zinc-950 border-white/10 text-white shadow-2xl">
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-xl font-bold">Yakin ingin keluar?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-zinc-400">
+                            Sesi Anda akan berakhir dan Anda harus login kembali untuk mengakses dashboard.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel className="bg-transparent border-white/10 text-zinc-300 hover:bg-white/5 hover:text-white">
+                            Batal
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            onClick={confirmLogout}
+                            className="bg-red-600 hover:bg-red-700 text-white border-0 shadow-lg shadow-red-600/20"
+                        >
+                            Ya, Keluar
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </>
     );
 }

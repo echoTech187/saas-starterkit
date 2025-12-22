@@ -31,7 +31,7 @@ export default function SettingsPage() {
     const [profile, setProfile] = useState({
         name: "Agus Santoso",
         bio: "",
-        avatarUrl: "/avatars/01.png"
+        avatarUrl: ""
     });
 
     // State Password

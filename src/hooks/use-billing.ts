@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { toast } from "sonner";
 
 export type Invoice = {
     id: string;
@@ -45,7 +46,7 @@ export function useBilling() {
     const handleDownloadInvoice = (id: string) => {
         setIsLoading(true);
         setTimeout(() => {
-            alert(`Downloaded invoice ${id}`);
+            toast.success(`Downloaded invoice ${id}`);
             setIsLoading(false);
         }, 1000);
     };
@@ -68,7 +69,7 @@ export function useBilling() {
             setIsLoading(false);
             setIsUpgradeOpen(false);
             // Di sini nanti panggil API backend buat dapat Snap Token Midtrans
-            alert(`Redirecting to Midtrans Payment for: ${planName} (${cycle})...`);
+            toast.success(`Pembayaran berhasil: ${planName} (${cycle})...`);
         }, 2000);
     };
 

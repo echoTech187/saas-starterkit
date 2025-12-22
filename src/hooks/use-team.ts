@@ -17,7 +17,7 @@ const initialMembers: TeamMember[] = [
         name: "Shadcn Admin",
         email: "m@example.com",
         role: "Owner",
-        avatar: "/avatars/shadcn.jpg",
+        avatar: "",
         status: "Active"
     },
     {

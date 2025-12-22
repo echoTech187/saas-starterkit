@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export type OnboardingData = {
     // Step 1: Profile
@@ -56,7 +57,7 @@ export function useOnboarding() {
         // Simulasi Save ke Database
         setTimeout(() => {
             console.log("Onboarding Complete:", formData);
-            alert("Setup Selesai! Mengarahkan ke Dashboard...");
+            toast.success("Setup Selesai! Mengarahkan ke Dashboard...");
             setIsLoading(false);
             router.push("/dashboard"); // Redirect ke Dashboard
         }, 1500);

@@ -20,7 +20,7 @@ import Link from "next/link";
 const initialLogs = [
     {
         id: 1,
-        user: { name: "Agus Santoso", avatar: "/avatars/01.png", initials: "AG" },
+        user: { name: "Agus Santoso", avatar: "", initials: "AG" },
         action: "deployed version",
         target: "v1.2.5",
         project: "Nusantara SaaS",
@@ -30,7 +30,7 @@ const initialLogs = [
     },
     {
         id: 2,
-        user: { name: "Budi Pratama", avatar: "/avatars/02.png", initials: "BP" },
+        user: { name: "Budi Pratama", avatar: "", initials: "BP" },
         action: "updated billing info",
         target: "Visa ending 4242",
         project: "Global",
@@ -40,7 +40,7 @@ const initialLogs = [
     },
     {
         id: 3,
-        user: { name: "Agus Santoso", avatar: "/avatars/01.png", initials: "AG" },
+        user: { name: "Agus Santoso", avatar: "", initials: "AG" },
         action: "invited member",
         target: "citra@design.com",
         project: "Nusantara SaaS",
@@ -60,7 +60,7 @@ const initialLogs = [
     },
     {
         id: 5,
-        user: { name: "Budi Pratama", avatar: "/avatars/02.png", initials: "BP" },
+        user: { name: "Budi Pratama", avatar: "", initials: "BP" },
         action: "changed project settings",
         target: "Environment Variables",
         project: "Marketing Site",
@@ -70,7 +70,7 @@ const initialLogs = [
     },
     {
         id: 6,
-        user: { name: "Agus Santoso", avatar: "/avatars/01.png", initials: "AG" },
+        user: { name: "Agus Santoso", avatar: "", initials: "AG" },
         action: "deleted project",
         target: "Old Landing Page",
         project: "-",

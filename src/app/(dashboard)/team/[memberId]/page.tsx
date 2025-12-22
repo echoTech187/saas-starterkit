@@ -21,7 +21,7 @@ const memberData = {
     email: "agus@nusantara.id",
     location: "Jakarta, ID",
     joined: "September 2023",
-    avatar: "/avatars/01.png",
+    avatar: "",
     initials: "AG",
     bio: "Passionate about UI/UX and building accessible web applications. Love Shadcn UI and Tailwind CSS.",
     skills: ["React", "Next.js", "TypeScript", "Tailwind CSS"],

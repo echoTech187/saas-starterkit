@@ -31,8 +31,8 @@ type Member = {
 };
 // Dummy Data Anggota Tim
 const initialMembers = [
-    { id: 1, name: "Agus Santoso", email: "agus@nusantara.id", role: "Owner", avatar: "/avatars/01.png", status: "Active" },
-    { id: 2, name: "Budi Pratama", email: "budi.dev@gmail.com", role: "Editor", avatar: "/avatars/02.png", status: "Active" },
+    { id: 1, name: "Agus Santoso", email: "agus@nusantara.id", role: "Owner", avatar: "", status: "Active" },
+    { id: 2, name: "Budi Pratama", email: "budi.dev@gmail.com", role: "Editor", avatar: "", status: "Active" },
     { id: 3, name: "Citra Dewi", email: "citra.design@yahoo.com", role: "Viewer", avatar: "", status: "Pending" },
 ];
 

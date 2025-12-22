@@ -12,7 +12,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             {/* AREA KONTEN UTAMA */}
             {/* Ganti bg-black jadi bg-background agar ikut variabel CSS */}
             {/* Tambahkan bg-[radial-gradient...] untuk efek premium ala UI8 */}
-            <SidebarInset className="bg-[#11191b]  relative overflow-x-hidden min-h-screen">
+            <SidebarInset className="bg-background  relative overflow-x-hidden min-h-screen">
 
                 {/* Background Glow Effect (Opsional: Biar gak flat banget) */}
                 <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(6,182,212,0.15),rgba(255,255,255,0))] pointer-events-none z-0" />
