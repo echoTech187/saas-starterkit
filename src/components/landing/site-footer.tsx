@@ -1,10 +1,22 @@
-import Link from "next/link";
-import { Twitter, Github, Linkedin } from "lucide-react";
+"use client"; // Tambahkan use client
+
+import { Twitter, Linkedin } from "lucide-react";
 import Logo from "./logo";
+import { toast } from "sonner";
+import { GithubIcon } from "../ui/github-icon";
 
 export function SiteFooter() {
+
+    const handleScroll = (id: string) => {
+        document.querySelector(id)?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    const handleDummyLink = (name: string) => {
+        toast.info(`Link ${name}`, { description: "Link ini hanya demo untuk keperluan UI." });
+    };
+
     return (
-        <footer className="border-t border-white/5 bg-gray-900 text-white pt-16 pb-8">
+        <footer className="border-t border-white/5 bg-gray-900 text-white pt-16 pb-8 scroll-mt-8">
             <div className="w-full max-w-6xl mx-auto px-4">
                 <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4 mb-12">
 
@@ -16,40 +28,40 @@ export function SiteFooter() {
                         </p>
                     </div>
 
-                    {/* Product Links */}
+                    {/* Product Links - SCROLL ACTION */}
                     <div>
                         <h3 className="mb-4 font-semibold text-white">Produk</h3>
                         <ul className="space-y-2 text-sm text-white/60">
-                            <li><Link href="#" className="hover:text-cyan-400 transition-colors">Fitur</Link></li>
-                            <li><Link href="#" className="hover:text-cyan-400 transition-colors">Harga</Link></li>
-                            <li><Link href="#" className="hover:text-cyan-400 transition-colors">Showcase</Link></li>
-                            <li><Link href="#" className="hover:text-cyan-400 transition-colors">Dokumentasi</Link></li>
+                            <li><button onClick={() => handleScroll('#features')} className="hover:text-cyan-400 transition-colors cursor-pointer">Fitur</button></li>
+                            <li><button onClick={() => handleScroll('#pricing')} className="hover:text-cyan-400 transition-colors cursor-pointer">Harga</button></li>
+                            <li><button onClick={() => handleScroll('#hero')} className="hover:text-cyan-400 transition-colors cursor-pointer">Demo</button></li>
+                            <li><button onClick={() => handleScroll('#faq')} className="hover:text-cyan-400 transition-colors cursor-pointer">FAQ</button></li>
                         </ul>
                     </div>
 
-                    {/* Legal Links */}
+                    {/* Legal Links - DUMMY ACTION */}
                     <div>
                         <h3 className="mb-4 font-semibold text-white">Legal</h3>
                         <ul className="space-y-2 text-sm text-white/60">
-                            <li><Link href="#" className="hover:text-cyan-400 transition-colors">Privacy Policy</Link></li>
-                            <li><Link href="#" className="hover:text-cyan-400 transition-colors">Terms of Service</Link></li>
-                            <li><Link href="#" className="hover:text-cyan-400 transition-colors">Lisensi</Link></li>
+                            <li><button onClick={() => handleDummyLink('Privacy')} className="hover:text-cyan-400 transition-colors cursor-pointer">Privacy Policy</button></li>
+                            <li><button onClick={() => handleDummyLink('ToS')} className="hover:text-cyan-400 transition-colors cursor-pointer">Terms of Service</button></li>
+                            <li><button onClick={() => handleDummyLink('License')} className="hover:text-cyan-400 transition-colors cursor-pointer">Lisensi</button></li>
                         </ul>
                     </div>
 
-                    {/* Social Links */}
+                    {/* Social Links - DUMMY ACTION */}
                     <div>
                         <h3 className="mb-4 font-semibold text-white">Connect</h3>
                         <div className="flex gap-4">
-                            <Link href="#" className="text-white/60 hover:text-white transition-colors">
+                            <button onClick={() => handleDummyLink('Twitter')} className="text-white/60 hover:text-white transition-colors cursor-pointer">
                                 <Twitter className="h-5 w-5" />
-                            </Link>
-                            <Link href="#" className="text-white/60 hover:text-white transition-colors">
-                                <Github className="h-5 w-5" />
-                            </Link>
-                            <Link href="#" className="text-white/60 hover:text-white transition-colors">
+                            </button>
+                            <button onClick={() => handleDummyLink('Github')} className="text-white/60 hover:text-white transition-colors cursor-pointer">
+                                <GithubIcon className="h-5 w-5" />
+                            </button>
+                            <button onClick={() => handleDummyLink('LinkedIn')} className="text-white/60 hover:text-white transition-colors cursor-pointer">
                                 <Linkedin className="h-5 w-5" />
-                            </Link>
+                            </button>
                         </div>
                     </div>
                 </div>

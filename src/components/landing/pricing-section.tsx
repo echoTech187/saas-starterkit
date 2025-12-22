@@ -70,7 +70,7 @@ export function PricingSection() {
 
     return (
         <>
-            <section className="bg-black py-24 relative overflow-hidden" id="pricing">
+            <section className="bg-black py-24 relative overflow-hidden scroll-mt-8" id="pricing">
                 <div className="w-full max-w-6xl mx-auto">
                     {/* Background Gradient Blob (Pemanis) */}
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-125 h-125 bg-purple-900/20 blur-[120px] rounded-full pointer-events-none" />

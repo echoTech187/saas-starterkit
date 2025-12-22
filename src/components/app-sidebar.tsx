@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
     LayoutDashboard,
     FolderOpen,
@@ -66,6 +66,7 @@ const initialTeams = [
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+    const router = useRouter();
     const pathname = usePathname();
     const { state } = useSidebar();
 
@@ -111,7 +112,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             });
         }, 1000);
     };
-
+    const handleLogout = () => {
+        toast.success("Berhasil Logout", { description: "Session anda telah berakhir." });
+        router.push("/login"); // Atau ke '/'
+    };
     return (
         <>
             <Sidebar
@@ -253,7 +257,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <SidebarMenuItem>
                             <SidebarMenuButton
                                 size="lg"
-                                className="data-[state=open]:bg-white/10 data-[state=open]:text-white hover:bg-white/5 hover:text-white text-zinc-400"
+                                onClick={handleLogout}
+                                className="data-[state=open]:bg-white/10 data-[state=open]:text-white hover:bg-white/5 hover:text-white text-zinc-400 cursor-pointer group"
                             >
                                 <Avatar className="h-8 w-8 rounded-lg border border-white/10">
                                     <AvatarImage src="/avatars/shadcn.jpg" alt="@shadcn" />
@@ -263,7 +268,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                     <span className="truncate font-semibold text-white">Shadcn</span>
                                     <span className="truncate text-xs">m@example.com</span>
                                 </div>
-                                <LogOut className="ml-auto size-4" />
+                                <LogOut className="ml-auto size-4 group-hover:text-red-400 transition-colors" />
                             </SidebarMenuButton>
                         </SidebarMenuItem>
                     </SidebarMenu>

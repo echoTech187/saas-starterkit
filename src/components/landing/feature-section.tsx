@@ -6,7 +6,7 @@ import Image from "next/image";
 
 export default function FeaturesSection() {
     return (
-        <section className="relative h-full bg-gray-900 text-zinc-500 py-32 max-xl:px-6">
+        <section id="features" className="relative h-full bg-gray-900 text-zinc-500 py-32 max-xl:px-6 scroll-mt-8">
             <div className="w-full h-full absolute top-0 left-0 right-0 bottom-0 ">
                 <RevealOnScroll delay={0.2} width="100%">
                     <Image src={"/src/images/features/round-neon.png"} unoptimized loading="eager" alt="login illustration" width={2048} height={959} className="w-full mx-auto h-auto opacity-10 bg-blend-screen bg-cover bg-no-repeat bg-center bg-fixed" />

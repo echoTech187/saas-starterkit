@@ -10,7 +10,7 @@ export function ProblemSolutionSection() {
             <div className="container mx-auto px-4 space-y-32 w-full max-w-6xl">
 
                 {/* --- PART 1: THE PROBLEM (Text Left, Image Right) --- */}
-                <div className="grid items-center gap-12 md:grid-cols-2 lg:gap-24 max-lg:grid-reverse">
+                <div id="problem" className="grid items-center gap-12 md:grid-cols-2 lg:gap-24 max-lg:grid-reverse scroll-mt-8">
 
                     {/* Kolom Teks */}
                     <RevealOnScroll>
