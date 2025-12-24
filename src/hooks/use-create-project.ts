@@ -2,7 +2,8 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { createProjectAction, ActionState } from "@/features/actions/create-project";
+import { createProjectAction } from "@/features/actions/project";
+import { ActionState } from "@/lib/types/action-states";
 
 export function useCreateProject() {
     const initialState: ActionState = { status: "idle", message: "" };

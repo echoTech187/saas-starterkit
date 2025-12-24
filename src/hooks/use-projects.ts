@@ -1,106 +1,117 @@
 import { useState, useMemo } from "react";
+import { allProjects, initialDeployments } from "@/features/data/projects";
+import { toast } from "sonner";
 
-// --- 1. Definisi Tipe Data ---
-export interface Project {
-  id: string;
-  name: string;
-  description: string;
-  framework: string;
-  
-  // ✅ GANTI JADI STRING (Nama Icon di Lucide)
-  iconName: string; 
-  
-  status: "Live" | "Building" | "Offline";
-  statusColor: string;
-  repo: string;
-  branch: string;
-  lastDeploy: string;
-  url: string;
-}
-
-// --- 2. Data Dummy (Simulasi Database) ---
-const allProjects: Project[] = [
-  {
-    id: "toko-online-v2",
-    name: "Toko Online V2",
-    description: "Next.js e-commerce platform with Stripe integration.",
-    framework: "Next.js",
-    iconName: "Globe", // <-- String: Nanti diload jadi <Globe />
-    status: "Live",
-    statusColor: "bg-emerald-500",
-    repo: "shadcn/toko-online",
-    branch: "main",
-    lastDeploy: "2m ago",
-    url: "https://tokoonline.com"
-  },
-  {
-    id: "backend-api",
-    name: "Backend API Production",
-    description: "Express.js REST API serving mobile and web clients.",
-    framework: "Node.js",
-    iconName: "Server", // <-- String: Nanti diload jadi <Server />
-    status: "Building",
-    statusColor: "bg-amber-500",
-    repo: "shadcn/backend-api",
-    branch: "feat/auth-v2",
-    lastDeploy: "Running...",
-    url: "https://api.tokoonline.com"
-  },
-  {
-    id: "worker-nodes",
-    name: "Worker Nodes",
-    description: "Redis worker for processing background jobs.",
-    framework: "Docker",
-    iconName: "Database", // <-- String
-    status: "Offline",
-    statusColor: "bg-zinc-500",
-    repo: "shadcn/workers",
-    branch: "main",
-    lastDeploy: "5d ago",
-    url: "-"
-  },
-  {
-    id: "admin-dashboard",
-    name: "Admin Dashboard Internal",
-    description: "Internal tool for managing users and orders.",
-    framework: "React",
-    iconName: "Cpu", // <-- String
-    status: "Live",
-    statusColor: "bg-emerald-500",
-    repo: "shadcn/admin-dash",
-    branch: "develop",
-    lastDeploy: "1h ago",
-    url: "https://admin.tokoonline.com"
-  },
-];
-
-// --- 3. Hook Logic (Tidak Berubah) ---
 export function useProjects() {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("All");
+  const [isSaving, setIsSaving] = useState(false);
+
+  // STATES ACTION MODALS
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  // State untuk Logs
+  const [isLogsOpen, setIsLogsOpen] = useState(false);
+  const [selectedLogId, setSelectedLogId] = useState("");
+
+  // State untuk Rollback
+  const [isRollbackAlertOpen, setIsRollbackAlertOpen] = useState(false);
+  const [rollbackTarget, setRollbackTarget] = useState<{ id: string, commit: string } | null>(null);
 
   const filteredProjects = useMemo(() => {
     return allProjects.filter((project) => {
-      const matchesSearch = 
-        project.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      const matchesSearch =
+        project.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.repo.toLowerCase().includes(searchQuery.toLowerCase());
 
       let matchesTab = true;
       if (activeTab === "Production") {
-          matchesTab = project.status === "Live";
+        matchesTab = project.status === "Live";
       } else if (activeTab === "Development") {
-          matchesTab = project.status === "Building" || project.status === "Offline";
+        matchesTab = project.status === "Building" || project.status === "Offline";
       }
 
       return matchesSearch && matchesTab;
     });
   }, [searchQuery, activeTab]);
 
+
+  const filteredDeployments = initialDeployments.filter(d =>
+    d.commit.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    d.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    d.commitId.includes(searchQuery.toLowerCase())
+  );
+
+
+  const handleViewLogs = (commitId: string) => {
+    setSelectedLogId(commitId);
+    setIsLogsOpen(true);
+  };
+
+  const confirmRollback = (deploy: typeof initialDeployments[0]) => {
+    setRollbackTarget({ id: deploy.commitId, commit: deploy.commit });
+    setIsRollbackAlertOpen(true);
+  };
+
+  const handleRollbackAction = () => {
+    setIsRollbackAlertOpen(false);
+    toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
+      loading: `Rolling back to ${rollbackTarget?.id}...`,
+      success: 'Rollback successful! Deployment started.',
+      error: 'Rollback failed',
+    });
+  };
+
+  const handleSaveSettings = () => {
+    setIsSaving(true);
+    setTimeout(() => {
+      setIsSaving(false);
+      toast.success("Pengaturan project berhasil disimpan!");
+    }, 1500);
+  };
+
+  const handleDeleteProject = () => {
+    setIsDeleting(true);
+    setTimeout(() => {
+      setIsDeleting(false);
+      toast.error("Project telah dihapus (Simulasi)");
+    }, 2000);
+  };
+  // 4. Handler Copy Commit ID
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    toast.success(`Commit ID ${text} disalin ke clipboard!`);
+  };
+
+  // 5. Handler Configure Git
+  const handleConfigureGit = () => {
+    toast.info("Mengarahkan ke GitHub App integration...");
+    window.open('https://github.com/apps/nusantara-saas', '_blank');
+  };
   return {
     searchQuery,
-    setSearchQuery,
     activeTab,
-    setActiveTab,
     filteredProjects,
+    filteredDeployments,
+    isSaving,
+    isRollbackAlertOpen,
+    rollbackTarget,
+    selectedLogId,
+    isLogsOpen,
+    isDeleting,
+    setIsSaving,
+    setActiveTab,
+    setIsDeleting,
+    setSearchQuery,
+    setIsLogsOpen,
+    setSelectedLogId,
+    setIsRollbackAlertOpen,
+    handleViewLogs,
+    handleSaveSettings,
+    handleDeleteProject,
+    confirmRollback,
+    handleRollbackAction,
+    copyToClipboard,
+    handleConfigureGit
   };
 }

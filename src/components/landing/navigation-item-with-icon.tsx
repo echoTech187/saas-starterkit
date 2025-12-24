@@ -1,10 +1,5 @@
-import { LucideIcon } from "lucide-react";
+import { NavigationProps } from "@/lib/types/navigation";
 
-type NavigationProps = {
-    title: string;
-    href: string;
-    icon: LucideIcon;
-}
 export default function NavigationItemWithIcon({ item }: { item: NavigationProps }) {
     return (
         <div className='flex items-center gap-2' key={item.title}>

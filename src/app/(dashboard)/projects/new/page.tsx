@@ -6,19 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Loader2, Globe, Server, Database, Cpu, Layout, Box, AlertCircle, GitBranch } from "lucide-react";
+import { ArrowLeft, Loader2, AlertCircle, GitBranch } from "lucide-react";
 import { useCreateProject } from "@/hooks/use-create-project";
 import { IconPicker } from "@/components/projects/icon-picker";
-
-// ... (Frameworks constant sama seperti sebelumnya) ...
-const frameworks = [
-    { id: "Next.js", name: "Next.js", icon: Globe, color: "hover:border-white/50 peer-checked:border-white peer-checked:bg-white/10" },
-    { id: "React", name: "React", icon: Cpu, color: "hover:border-blue-500/50 peer-checked:border-blue-500 peer-checked:bg-blue-500/10 peer-checked:text-blue-400" },
-    { id: "Node.js", name: "Node.js", icon: Server, color: "hover:border-emerald-500/50 peer-checked:border-emerald-500 peer-checked:bg-emerald-500/10 peer-checked:text-emerald-400" },
-    { id: "Docker", name: "Docker", icon: Database, color: "hover:border-sky-500/50 peer-checked:border-sky-500 peer-checked:bg-sky-500/10 peer-checked:text-sky-400" },
-    { id: "Vue", name: "Vue.js", icon: Layout, color: "hover:border-emerald-400/50 peer-checked:border-emerald-400 peer-checked:bg-emerald-400/10 peer-checked:text-emerald-300" },
-    { id: "Other", name: "Other", icon: Box, color: "hover:border-amber-500/50 peer-checked:border-amber-500 peer-checked:bg-amber-500/10 peer-checked:text-amber-400" },
-];
+import { frameworks } from "@/features/data/tech-stack";
 
 export default function NewProjectPage() {
     const { form, setters, action, state, isPending } = useCreateProject();

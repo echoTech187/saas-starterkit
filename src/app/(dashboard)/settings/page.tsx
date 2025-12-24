@@ -1,100 +1,64 @@
 "use client";
 
-import { useState, useRef } from "react";
-import { useTheme } from "next-themes"; // Hook untuk ganti tema
+import { useState } from "react";
 import {
     User, Lock, Bell, Palette, Camera, Save, Loader2,
-    Moon, Sun, Laptop, ShieldAlert} from "lucide-react";
+    Moon, Sun, Laptop, ShieldAlert
+} from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+    Avatar,
+    AvatarFallback,
+    AvatarImage
+} from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+    Card,
+    CardContent,
+    CardDescription,
+    CardFooter,
+    CardHeader,
+    CardTitle
+} from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-    AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { useSettings } from "@/hooks/use-settings";
 
 export default function SettingsPage() {
-    const [isLoading, setIsLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState("profile");
 
-    // --- STATE FORME & LOGIC ---
-    const { setTheme, theme } = useTheme(); // Hook Next-Themes
-
-    // State Profile
-    const [profile, setProfile] = useState({
-        name: "Agus Santoso",
-        bio: "",
-        avatarUrl: ""
-    });
-
-    // State Password
-    const [passwords, setPasswords] = useState({ current: "", new: "", confirm: "" });
-
-    // Ref untuk Input File (Upload Avatar)
-    const fileInputRef = useRef<HTMLInputElement>(null);
-
-    // --- HANDLERS ---
-
-    // 1. Handler Save Profile
-    const handleSaveProfile = () => {
-        setIsLoading(true);
-        // Simulasi API call
-        setTimeout(() => {
-            setIsLoading(false);
-            toast.success("Profil berhasil diperbarui!");
-        }, 1500);
-    };
-
-    // 2. Handler Update Password
-    const handleUpdatePassword = () => {
-        if (!passwords.current || !passwords.new || !passwords.confirm) {
-            toast.error("Mohon lengkapi semua field password.");
-            return;
-        }
-        if (passwords.new !== passwords.confirm) {
-            toast.error("Password baru dan konfirmasi tidak cocok.");
-            return;
-        }
-
-        setIsLoading(true);
-        setTimeout(() => {
-            setIsLoading(false);
-            setPasswords({ current: "", new: "", confirm: "" }); // Reset form
-            toast.success("Password berhasil diubah!");
-        }, 1500);
-    };
-
-    // 3. Handler Delete Account
-    const handleDeleteAccount = () => {
-        toast.error("Akun Anda telah dihapus. Mengarahkan ke halaman login...", {
-            duration: 3000,
-        });
-        // Logic redirect logout disini
-        // router.push("/login")
-    };
-
-    // 4. Handler Upload Avatar (Click Trigger)
-    const triggerFileInput = () => {
-        fileInputRef.current?.click();
-    };
-
-    // 5. Handler File Change (Preview Image)
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file) {
-            // Simulasi preview local
-            const objectUrl = URL.createObjectURL(file);
-            setProfile({ ...profile, avatarUrl: objectUrl });
-            toast.success("Foto profil diperbarui (Preview Only)");
-        }
-    };
+    const {
+        fileInputRef,
+        handleFileChange,
+        handleDeleteAccount,
+        theme,
+        setTheme,
+        activeTab,
+        setActiveTab,
+        triggerFileInput,
+        profile,
+        setProfile,
+        passwords,
+        setPasswords,
+        handleSaveProfile,
+        handleUpdatePassword,
+        isLoading
+    } = useSettings();
 
     return (
         <div className="space-y-6 pb-20">
@@ -366,7 +330,6 @@ export default function SettingsPage() {
     );
 }
 
-// Helper Component untuk Switch Notifikasi
 function NotificationSwitch({ title, desc, defaultChecked }: { title: string, desc: string, defaultChecked: boolean }) {
     const [checked, setChecked] = useState(defaultChecked);
 

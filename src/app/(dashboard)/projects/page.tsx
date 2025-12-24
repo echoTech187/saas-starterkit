@@ -17,12 +17,9 @@ import {
     ExternalLink, GitBranch, Clock,
     Trash2, Settings, Eye
 } from "lucide-react";
-
-
-// 2. IMPORT HOOK
 import { useProjects } from "@/hooks/use-projects";
 import { GithubIcon } from "@/components/ui/github-icon";
-import DynamicProjectIcon from "@/lib/dynamic-procted-icon";
+import DynamicProjectIcon from "@/lib/utils/dynamic-procted-icon";
 
 
 export default function ProjectsPage() {

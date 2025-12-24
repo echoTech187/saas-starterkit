@@ -22,7 +22,8 @@ import {
 import { toast } from "sonner";
 
 // Import Komponen Simulasi Midtrans
-import { MidtransSnap, SnapResult } from "@/components/billing/midtrans-snap";
+import { MidtransSnap } from "@/components/billing/midtrans-snap";
+import { SnapResult } from "@/lib/types/midtrans";
 
 // ... (DUMMY DATA: 'plans' dan 'invoices' biarkan sama seperti sebelumnya) ...
 const plans = [

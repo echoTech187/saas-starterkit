@@ -1,6 +1,4 @@
 "use client";
-
-import React, { useState } from "react";
 import Link from "next/link";
 import {
     Globe, MoreVertical, Activity, Cpu, HardDrive,
@@ -27,107 +25,37 @@ import { TeamSettings } from "@/components/settings/team-settings";
 import { GithubIcon } from "@/components/ui/github-icon";
 import { useDetailProjects } from "@/hooks/use-detail-project";
 import { useSearchParams } from "next/navigation";
-import { toast } from "sonner";
+import { getStatusColor } from "@/lib/utils";
+import * as React from "react";
+import { useProjects } from "@/hooks/use-projects";
 
-// ... (Dummy Data sama seperti sebelumnya) ...
-const projectData = {
-    name: "Nusantara SaaS",
-    id: "nusantara-saas",
-    status: "Live",
-    repo: "shadcn/ui",
-    branch: "main",
-    url: "https://nusantara-saas.com",
-    lastDeploy: "2m ago",
-    framework: "Next.js"
-};
-
-const initialDeployments = [
-    { id: "dpl_1", commit: "Feat: Add Icon Picker", commitId: "a1b2c3d", time: "2m ago", status: "Ready", user: "AG" },
-    { id: "dpl_2", commit: "Fix: Zod Schema", commitId: "e5f6g7h", time: "1h ago", status: "Ready", user: "AG" },
-    { id: "dpl_3", commit: "Chore: Update dependencies", commitId: "i8j9k0l", time: "5h ago", status: "Error", user: "System" },
-    { id: "dpl_4", commit: "Init: Project Setup", commitId: "m1n2o3p", time: "1d ago", status: "Ready", user: "AG" },
-];
-
-const getStatusColor = (status: string) => {
-    switch (status) {
-        case "Live": return "bg-emerald-500/15 text-emerald-400 border-emerald-500/20";
-        case "Building": return "bg-amber-500/15 text-amber-400 border-amber-500/20";
-        case "Error": return "bg-red-500/15 text-red-400 border-red-500/20";
-        default: return "bg-zinc-500/15 text-zinc-400 border-zinc-500/20";
-    }
-};
 
 export default function ProjectDetailPage({ params }: { params: Promise<{ projectid: string }> }) {
     const { projectid } = React.use(params);
     const targetTabs = useSearchParams().get("tab");
-    const { activeTab, setActiveTab } = useDetailProjects(projectid, targetTabs);
+    const { activeTab, setActiveTab, searchQuery, setSearchQuery, getProjectById } = useDetailProjects(projectid, targetTabs);
+    const {
+        filteredDeployments,
+        isDeleting,
+        selectedLogId,
+        isLogsOpen,
+        isRollbackAlertOpen,
+        rollbackTarget,
+        isSaving,
+        handleConfigureGit,
+        handleSaveSettings,
+        handleDeleteProject,
+        copyToClipboard,
+        handleRollbackAction,
+        handleViewLogs,
+        setIsRollbackAlertOpen,
+        confirmRollback,
+        setIsDeleting,
+        setIsLogsOpen,
+    } = useProjects();
 
-    const [searchQuery, setSearchQuery] = useState("");
-    const [isSaving, setIsSaving] = useState(false);
-
-    // STATES ACTION MODALS
-    const [isDeleting, setIsDeleting] = useState(false);
-
-    // State untuk Logs
-    const [isLogsOpen, setIsLogsOpen] = useState(false);
-    const [selectedLogId, setSelectedLogId] = useState("");
-
-    // State untuk Rollback
-    const [isRollbackAlertOpen, setIsRollbackAlertOpen] = useState(false);
-    const [rollbackTarget, setRollbackTarget] = useState<{ id: string, commit: string } | null>(null);
-
-    const filteredDeployments = initialDeployments.filter(d =>
-        d.commit.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        d.user.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        d.commitId.includes(searchQuery.toLowerCase())
-    );
-
-
-    const handleViewLogs = (commitId: string) => {
-        setSelectedLogId(commitId);
-        setIsLogsOpen(true);
-    };
-
-    const confirmRollback = (deploy: typeof initialDeployments[0]) => {
-        setRollbackTarget({ id: deploy.commitId, commit: deploy.commit });
-        setIsRollbackAlertOpen(true);
-    };
-
-    const handleRollbackAction = () => {
-        setIsRollbackAlertOpen(false);
-        toast.promise(new Promise((resolve) => setTimeout(resolve, 2000)), {
-            loading: `Rolling back to ${rollbackTarget?.id}...`,
-            success: 'Rollback successful! Deployment started.',
-            error: 'Rollback failed',
-        });
-    };
-
-    const handleSaveSettings = () => {
-        setIsSaving(true);
-        setTimeout(() => {
-            setIsSaving(false);
-            toast.success("Pengaturan project berhasil disimpan!");
-        }, 1500);
-    };
-
-    const handleDeleteProject = () => {
-        setIsDeleting(true);
-        setTimeout(() => {
-            setIsDeleting(false);
-            toast.error("Project telah dihapus (Simulasi)");
-        }, 2000);
-    };
-    // 4. Handler Copy Commit ID
-    const copyToClipboard = (text: string) => {
-        navigator.clipboard.writeText(text);
-        toast.success(`Commit ID ${text} disalin ke clipboard!`);
-    };
-
-    // 5. Handler Configure Git
-    const handleConfigureGit = () => {
-        toast.info("Mengarahkan ke GitHub App integration...");
-        window.open('https://github.com/apps/nusantara-saas', '_blank');
-    };
+    const projectData = getProjectById(projectid);
+    if (!projectData) return null;
     return (
         <div className="space-y-6 pb-20">
 

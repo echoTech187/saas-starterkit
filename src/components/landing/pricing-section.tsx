@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { RevealOnScroll } from "@/components/ui/reveal-on-scroll";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "../ui/card";
 import { useState } from "react";
-import { MidtransSnap, SnapResult } from "../billing/midtrans-snap";
+import { MidtransSnap } from "../billing/midtrans-snap";
 import { toast } from "sonner";
 import { Badge } from "../ui/badge";
+import { SnapResult } from "@/lib/types/midtrans";
 
 const plans = [
     { id: "starter", name: "Starter", price: "$0", period: "/mo", description: "Untuk project hobi dan eksperimen.", features: ["1 Team Member", "3 Projects", "5GB Storage", "Community Support"], current: false },

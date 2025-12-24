@@ -9,19 +9,8 @@ import {
     Dialog, DialogContent, DialogDescription, DialogTitle
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { MidtransSnapProps, SnapResult } from "@/lib/types/midtrans";
 
-export type SnapResult = "success" | "pending" | "error" | "close";
-
-interface MidtransSnapProps {
-    isOpen: boolean;
-    onClose: () => void;
-    onResult: (result: SnapResult) => void;
-    orderDetails: {
-        orderId: string;
-        grossAmount: string;
-        itemName: string;
-    } | null;
-}
 
 export function MidtransSnap({ isOpen, onClose, onResult, orderDetails }: MidtransSnapProps) {
     const [step, setStep] = useState<"method" | "va" | "status">("method");

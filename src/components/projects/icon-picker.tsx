@@ -2,11 +2,10 @@
 "use client";
 
 import * as React from "react";
-// Import semua ikon
 import * as LucideIcons from "lucide-react";
 import { Check, ChevronsUpDown, Search } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn, iconList } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
     Command,
@@ -21,18 +20,7 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-
-// --- LOGIC: GENERATE LIST DI LUAR COMPONENT ---
-// Mencegah error "undefined reading map" dan re-render loop
-const iconList = Object.keys(LucideIcons)
-    .filter((key) => key !== "icons" && key !== "createLucideIcon")
-    .slice(0, 300) // Limit 300 icon agar performa tetap ringan
-    .sort();
-
-interface IconPickerProps {
-    value: string;
-    onChange: (iconName: string) => void;
-}
+import { IconPickerProps } from "@/lib/types/icon";
 
 export function IconPicker({ value, onChange }: IconPickerProps) {
     const [open, setOpen] = React.useState(false);

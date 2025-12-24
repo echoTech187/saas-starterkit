@@ -15,66 +15,11 @@ import {
     DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils"; // Pastikan utilitas cn ada (standar shadcn)
+import { cn } from "@/lib/utils";
+import { Notification, NotificationCategory } from "@/lib/types/notification";
+import { initialNotifications } from "@/features/data/notification";
 
-// --- DUMMY DATA ---
-type Notification = {
-    id: string;
-    title: string;
-    message: string;
-    time: string;
-    type: "info" | "success" | "warning" | "error" | "invite";
-    read: boolean;
-    category: string; // System, Billing, Project, Team
-};
 
-const initialNotifications: Notification[] = [
-    {
-        id: "1",
-        title: "Deployment Successful",
-        message: "Project Toko Online V2 has been successfully deployed to production.",
-        time: "2 minutes ago",
-        type: "success",
-        read: false,
-        category: "Project"
-    },
-    {
-        id: "2",
-        title: "Payment Received",
-        message: "Thank you! We received your payment of $29.00 for the Pro Plan.",
-        time: "1 hour ago",
-        type: "info",
-        read: false,
-        category: "Billing"
-    },
-    {
-        id: "3",
-        title: "High Memory Usage Alert",
-        message: "Worker-01 is consuming 85% of available memory. Consider scaling up.",
-        time: "3 hours ago",
-        type: "warning",
-        read: false,
-        category: "System"
-    },
-    {
-        id: "4",
-        title: "Invitation Accepted",
-        message: "Citra Dewi has accepted your invitation to join the team.",
-        time: "Yesterday",
-        type: "invite",
-        read: true,
-        category: "Team"
-    },
-    {
-        id: "5",
-        title: "Database Backup Failed",
-        message: "Daily backup for 'Main DB' failed due to connection timeout.",
-        time: "2 days ago",
-        type: "error",
-        read: true,
-        category: "System"
-    },
-];
 
 export default function NotificationsPage() {
     const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
@@ -117,7 +62,7 @@ export default function NotificationsPage() {
     // Filter Logic
     const filteredList = notifications.filter(n => {
         if (activeTab === "unread") return !n.read;
-        if (activeTab === "system") return n.category === "System";
+        if (activeTab === "system") return n.category === NotificationCategory.SYSTEM;
         return true; // "all"
     });
 

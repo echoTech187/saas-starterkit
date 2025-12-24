@@ -21,20 +21,9 @@ import { toast } from "sonner";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "../ui/dialog";
 import { DialogHeader, DialogFooter } from "../ui/dialog";
 import { DropdownMenuSeparator } from "../ui/dropdown-menu";
-type Member = {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-    avatar: string;
-    status: string;
-};
-// Dummy Data Anggota Tim
-const initialMembers = [
-    { id: 1, name: "Agus Santoso", email: "agus@nusantara.id", role: "Owner", avatar: "", status: "Active" },
-    { id: 2, name: "Budi Pratama", email: "budi.dev@gmail.com", role: "Editor", avatar: "", status: "Active" },
-    { id: 3, name: "Citra Dewi", email: "citra.design@yahoo.com", role: "Viewer", avatar: "", status: "Pending" },
-];
+import { Member } from "@/lib/types/team-member";
+import { initialMembers } from "@/features/data/team-member";
+import { join } from "path";
 
 export function TeamSettings() {
 
@@ -65,31 +54,40 @@ export function TeamSettings() {
                 email: inviteEmail,
                 role: inviteRole,
                 avatar: "",
+                location: "",
+                bio: "",
+                joined: "",
+                initials: "",
+                skills: [],
+                avatarUrl: "",
+                performance: {
+                    commits: 0,
+                    prs: 0,
+                    deployments: 0,
+                    uptime: "",
+                    score: 0
+                },
                 status: "Pending"
             };
 
             setMembers([...members, newMember]);
-            setInviteEmail(""); // Reset form
+            setInviteEmail("");
             setIsInviting(false);
             toast.success(`Undangan dikirim ke ${inviteEmail}`);
         }, 1000);
     };
 
-    // --- HANDLER: REMOVE MEMBER ---
     const handleRemoveMember = (id: number, name: string) => {
-        // Filter member yang id-nya tidak sama dengan yang dihapus
         setMembers(members.filter((m) => m.id !== id));
         toast.success(`${name} telah dihapus dari tim.`);
     };
 
-    // --- HANDLER: BUKA MODAL CHANGE ROLE ---
     const openChangeRoleModal = (member: Member) => {
         setSelectedMember(member);
-        setNewRole(member.role); // Set default value ke role saat ini
+        setNewRole(member.role);
         setIsRoleDialogOpen(true);
     };
 
-    // --- HANDLER: SIMPAN PERUBAHAN ROLE ---
     const confirmChangeRole = () => {
         if (!selectedMember) return;
 
@@ -155,7 +153,6 @@ export function TeamSettings() {
                         </Button>
                     </form>
 
-                    {/* --- MEMBERS LIST --- */}
                     <div className="space-y-1">
                         {members.map((member) => (
                             <div key={member.id} className="flex items-center justify-between p-3 rounded-lg hover:bg-white/5 transition-colors group">
@@ -196,7 +193,6 @@ export function TeamSettings() {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end" className="bg-zinc-900 border-white/10 text-zinc-300">
                                             <DropdownMenuItem
-                                                // PreventDefault agar dropdown tidak langsung menutup focus sebelum dialog siap
                                                 onSelect={(e) => { e.preventDefault(); openChangeRoleModal(member); }}
                                                 className="cursor-pointer focus:bg-white/10 focus:text-white"
                                             >

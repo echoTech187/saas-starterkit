@@ -1,45 +1,11 @@
 "use client";
 
+import { initialMembers } from "@/features/data/team-member";
+import { Member, Role, Status } from "@/lib/types/team-member";
 import { useState } from "react";
 
-export type TeamMember = {
-    id: string;
-    name: string;
-    email: string;
-    role: "Owner" | "Admin" | "Member";
-    avatar: string; // URL avatar dummy
-    status: "Active" | "Pending";
-};
-
-const initialMembers: TeamMember[] = [
-    {
-        id: "1",
-        name: "Shadcn Admin",
-        email: "m@example.com",
-        role: "Owner",
-        avatar: "",
-        status: "Active"
-    },
-    {
-        id: "2",
-        name: "John Doe",
-        email: "john@example.com",
-        role: "Admin",
-        avatar: "", // Kosong biar pakai fallback
-        status: "Active"
-    },
-    {
-        id: "3",
-        name: "Jane Smith",
-        email: "jane@example.com",
-        role: "Member",
-        avatar: "",
-        status: "Pending"
-    },
-];
-
 export function useTeam() {
-    const [members, setMembers] = useState<TeamMember[]>(initialMembers);
+    const [members, setMembers] = useState<Member[]>(initialMembers);
     const [isLoading, setIsLoading] = useState(false);
     const [isInviteOpen, setIsInviteOpen] = useState(false);
     const [inviteEmail, setInviteEmail] = useState("");
@@ -50,13 +16,26 @@ export function useTeam() {
         setIsLoading(true);
         // Simulasi API Call
         setTimeout(() => {
-            const newMember: TeamMember = {
-                id: Date.now().toString(),
-                name: inviteEmail.split("@")[0], // Pakai nama dari email dulu
+            const newMember: Member = {
+                id: Date.now(),
+                name: inviteEmail.split("@")[0],
                 email: inviteEmail,
-                role: inviteRole as "Owner" | "Admin" | "Member",
+                role: inviteRole as Role,
                 avatar: "",
-                status: "Pending"
+                status: "Pending" as Status,
+                location: "",
+                joined: "",
+                initials: "",
+                bio: "",
+                skills: [],
+                performance: {
+                    commits: 0,
+                    prs: 0,
+                    deployments: 0,
+                    uptime: "",
+                    score: 0
+                },
+                avatarUrl: ""
             };
             setMembers([...members, newMember]);
             setIsInviteOpen(false);
@@ -67,7 +46,7 @@ export function useTeam() {
     };
 
     // 2. REMOVE MEMBER
-    const handleRemoveMember = (id: string) => {
+    const handleRemoveMember = (id: number) => {
         if (confirm("Yakin ingin menghapus anggota ini dari tim?")) {
             setMembers(members.filter(m => m.id !== id));
         }

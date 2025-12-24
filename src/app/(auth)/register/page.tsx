@@ -1,21 +1,25 @@
 "use client";
 
-import { FieldValues, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useActionState } from "react";
+import { registerAction } from "@/app/_actions/authActions";
 
 export default function RegisterPage() {
     const router = useRouter()
-    const form = useForm();
-
-    async function onSubmit(data: FieldValues) {
-        console.log(data);
-        router.push('/otp');
-    }
+    const [state, formAction, isPending] = useActionState(registerAction, null);
+    const form = useForm({
+        defaultValues: {
+            email: "",
+            password: "",
+            confirm_password: "",
+        },
+    });
 
     return (
         <div className="relative w-full min-h-screen bg-black  text-white overflow-x-hidden">
@@ -44,7 +48,7 @@ export default function RegisterPage() {
                         </div>
 
                         <Form {...form} >
-                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                            <form action={formAction} className="space-y-4">
 
                                 <FormField
                                     control={form.control}

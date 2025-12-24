@@ -8,102 +8,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useOnboarding } from "@/hooks/use-onboarding";
 import { Badge } from "@/components/ui/badge";
 import { X, ArrowRight, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
-import { toast } from "sonner"; // Import Toast
-import { useState } from "react";
 import Logo from "@/components/landing/logo";
 
 export default function OnboardingPage() {
-    const [error, setError] = useState("");
-
     const {
         step, formData, inviteInput, isLoading,
-        setInviteInput, updateData, nextStep, prevStep,
-        addEmail, removeEmail, finishOnboarding
+        setInviteInput, updateData, prevStep,
+        removeEmail, handleNextStep, handleAddEmail, handleFinish, progressValue
     } = useOnboarding();
 
-    // Hitung Progress
-    const progressValue = (step / 3) * 100;
-
-    // --- WRAPPER HANDLERS (Mencegah window.alert) ---
-
-    const handleNextStep = () => {
-        setError("");
-        // Validasi Step 1
-        if (step === 1) {
-            if (!formData.fullName.trim()) {
-                setError("Nama Lengkap wajib diisi");
-                toast.error("Nama Lengkap wajib diisi", { description: "Kami perlu tahu nama Anda." });
-                return;
-            }
-            if (!formData.role) {
-                setError("Role wajib dipilih");
-                toast.error("Role wajib dipilih", { description: "Pilih role yang paling sesuai." });
-                return;
-            }
-        }
-
-        // Validasi Step 2
-        if (step === 2) {
-            if (!formData.projectName.trim()) {
-                setError("Nama Project wajib diisi");
-                toast.error("Nama Project wajib diisi", { description: "Nama project tidak boleh kosong." });
-                return;
-            }
-            // Validasi format domain sederhana (opsional)
-            if (formData.projectDomain && /[^a-z0-9-]/.test(formData.projectDomain)) {
-                setError("Format Domain tidak valid");
-                toast.error("Format Domain tidak valid", { description: "Hanya gunakan huruf kecil, angka, dan strip (-)." });
-                return;
-            }
-        }
-
-        // Jika lolos validasi, panggil nextStep dari hook
-        nextStep();
-    };
-
-    const handleAddEmail = () => {
-        setError("");
-        if (!inviteInput.trim()) {
-            setError("Email wajib diisi");
-            toast.error("Email kosong", { description: "Masukkan alamat email teman Anda." });
-            return;
-        }
-        // Regex Email Sederhana
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(inviteInput)) {
-            setError("Format email salah");
-            toast.error("Format email salah", { description: "Mohon masukkan email yang valid." });
-            return;
-        }
-
-        // Cek duplikasi
-        if (formData.teamEmails.includes(inviteInput)) {
-            setError("Email sudah ada");
-            toast.warning("Email sudah ada", { description: "Anda sudah mengundang email ini." });
-            return;
-        }
-
-        // Panggil fungsi hook jika aman
-        addEmail();
-        toast.success("Email ditambahkan");
-    };
-
-    const handleFinish = () => {
-        if (error) {
-            toast.error(error);
-            return;
-        }
-        if (formData.teamEmails.length === 0) {
-            setError("Tambahkan minimal 1 anggota ke tim");
-            toast.error("Tambahkan minimal 1 anggota ke tim", { description: "Tim Anda belum memiliki anggota. Tambahkan teman Anda untuk memulai." });
-            return;
-        }
-
-        // Panggil fungsi finish
-        finishOnboarding();
-        toast.success("Setup Selesai!", { description: "Mengarahkan ke dashboard..." });
-    };
-
+    
     return (
         <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 relative overflow-hidden">
 

@@ -48,6 +48,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import Image from "next/image";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
+import { removeToken } from "@/lib/utils/auth";
+import { IUser } from "@/core/entities/IUser";
+import { signOut } from "next-auth/react";
 // Data Navigasi (Tetap)
 const data = {
     navMain: [
@@ -66,7 +69,7 @@ const initialTeams = [
     { id: "t2", name: "Nusantara Corp", plan: "Pro Plan", logo: "N" },
 ];
 
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sidebar> & { user: IUser }) {
     const router = useRouter();
     const pathname = usePathname();
     const { state } = useSidebar();
@@ -85,10 +88,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const [isLogoutDialogOpen, setIsLogoutDialogOpen] = React.useState(false);
 
     // Fungsi Konfirmasi Logout
-    const confirmLogout = () => {
+    const confirmLogout = async () => {
         setIsLogoutDialogOpen(false);
-        toast.success("Berhasil Logout", { description: "Session anda telah berakhir." });
-        router.push("/login");
+        await removeToken();
+        await signOut();
+        toast.success("Logout berhasil. Sampai jumpa kembali!");
+        return router.push("/login");
     };
     // Handler: Buat Tim Baru
     const handleCreateTeam = () => {
@@ -267,8 +272,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                                     <AvatarFallback className="rounded-lg bg-zinc-800 text-zinc-400">CN</AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight ml-2">
-                                    <span className="truncate font-semibold text-white">Shadcn</span>
-                                    <span className="truncate text-xs">m@example.com</span>
+                                    <span className="truncate font-semibold text-white">{user.username}</span>
+                                    <span className="truncate text-xs">{user.email}</span>
                                 </div>
                                 <LogOut className="ml-auto size-4 group-hover:text-red-400 transition-colors" />
                             </SidebarMenuButton>

@@ -1,5 +1,5 @@
 "use client"
-import { BellIcon, HomeIcon, MenuIcon, UserIcon, XIcon, LogOut, CreditCard } from "lucide-react";
+import { MenuIcon, XIcon, LogOut } from "lucide-react";
 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu"
 import { Button } from "../ui/button"
@@ -8,18 +8,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import UserProfile from "./user-profile";
 import { DropdownMenuSeparator } from "@/components/ui/dropdown-menu"; // Pastikan import benar
 import { Drawer, DrawerClose, DrawerContent, DrawerFooter, DrawerHeader, DrawerTitle, DrawerTrigger } from "../ui/drawer";
-import { useRouter } from "next/navigation"; // Untuk redirect
-import { toast } from "sonner"; // Untuk feedback
 import { useState } from "react";
 import { AlertDialogHeader, AlertDialogFooter, AlertDialog, AlertDialogContent, AlertDialogTitle, AlertDialogDescription, AlertDialogCancel, AlertDialogAction } from "../ui/alert-dialog";
-
-// Update Data Navigasi dengan ID Section
-const navigationData = [
-    { title: 'Beranda', href: '#hero', icon: HomeIcon },
-    { title: 'Fitur', href: '#features', icon: BellIcon }, // Ganti Harga jadi Fitur/Pricing
-    { title: 'Harga', href: '#pricing', icon: CreditCard },
-    { title: 'FAQ', href: '#faq', icon: UserIcon },
-]
+import navigationData from "@/features/data/navigation";
+import { removeToken } from "@/lib/utils/auth";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function NavbarSection() {
     const router = useRouter();
@@ -37,17 +31,11 @@ export default function NavbarSection() {
     };
 
     // Fungsi Logout Simulasi
-    const confirmLogout = () => {
+    const confirmLogout = async () => {
         setIsAlertOpen(false);
-        // Simulasi delay logout
-        toast.promise(new Promise((resolve) => setTimeout(resolve, 1000)), {
-            loading: 'Sedang keluar...',
-            success: () => {
-                router.push("/login");
-                return "Berhasil logout. Sampai jumpa!";
-            },
-            error: 'Gagal logout',
-        });
+        await removeToken();
+        toast.success("Logout berhasil. Sampai jumpa kembali!");
+        return router.push("/login");
     };
 
     return (

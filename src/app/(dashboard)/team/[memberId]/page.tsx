@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
-    Mail, MapPin, Calendar, GitCommit, GitPullRequest,
-    Zap, Clock, ArrowLeft, ExternalLink, Shield
+    Mail, MapPin, Calendar,
+    Clock, ArrowLeft, ExternalLink, Shield
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -12,39 +12,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { assignedProjects, memberActivity, memberProfile } from "@/features/data/team-member";
 
-// --- DUMMY DATA ---
-const memberData = {
-    id: "user-123",
-    name: "Agus Santoso",
-    role: "Senior Frontend Engineer",
-    email: "agus@nusantara.id",
-    location: "Jakarta, ID",
-    joined: "September 2023",
-    avatar: "",
-    initials: "AG",
-    bio: "Passionate about UI/UX and building accessible web applications. Love Shadcn UI and Tailwind CSS.",
-    skills: ["React", "Next.js", "TypeScript", "Tailwind CSS"],
-    performance: {
-        commits: 452,
-        prs: 86,
-        deployments: 124,
-        uptime: "99.9%",
-        score: 92 // Productivity Score
-    }
-};
-
-const assignedProjects = [
-    { name: "Nusantara SaaS", role: "Owner", status: "Live", tech: "Next.js" },
-    { name: "Marketing Site", role: "Editor", status: "Building", tech: "Astro" },
-    { name: "Documentation", role: "Viewer", status: "Live", tech: "Markdoc" },
-];
-
-const memberActivity = [
-    { action: "pushed commit", target: "feat: add user profile page", time: "2 hours ago", icon: GitCommit },
-    { action: "opened PR", target: "fix: mobile responsiveness", time: "5 hours ago", icon: GitPullRequest },
-    { action: "deployed", target: "production v1.2.0", time: "Yesterday", icon: Zap },
-];
 
 export default function MemberDetailPage() {
 
@@ -72,14 +41,14 @@ export default function MemberDetailPage() {
                 <CardContent className="pt-12 px-6 pb-6">
                     <div className="flex flex-col md:flex-row gap-6 items-start">
                         <Avatar className="w-24 h-24 border-4 border-zinc-950 shadow-xl">
-                            <AvatarImage src={memberData.avatar} />
-                            <AvatarFallback className="text-2xl bg-zinc-800 text-zinc-400">{memberData.initials}</AvatarFallback>
+                            <AvatarImage src={memberProfile.avatar} />
+                            <AvatarFallback className="text-2xl bg-zinc-800 text-zinc-400">{memberProfile.initials}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 space-y-2 mt-2">
                             <div className="flex items-center justify-between">
                                 <div>
-                                    <h2 className="text-2xl font-bold text-white">{memberData.name}</h2>
-                                    <p className="text-cyan-400 font-medium">{memberData.role}</p>
+                                    <h2 className="text-2xl font-bold text-white">{memberProfile.name}</h2>
+                                    <p className="text-cyan-400 font-medium">{memberProfile.role}</p>
                                 </div>
                                 <Badge variant="outline" className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400 px-3 py-1">
                                     <Shield className="w-3 h-3 mr-2" /> Verified Member
@@ -87,13 +56,13 @@ export default function MemberDetailPage() {
                             </div>
 
                             <div className="flex flex-wrap gap-4 text-sm text-zinc-400 mt-2">
-                                <div className="flex items-center gap-1"><Mail className="w-4 h-4" /> {memberData.email}</div>
-                                <div className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {memberData.location}</div>
-                                <div className="flex items-center gap-1"><Calendar className="w-4 h-4" /> Joined {memberData.joined}</div>
+                                <div className="flex items-center gap-1"><Mail className="w-4 h-4" /> {memberProfile.email}</div>
+                                <div className="flex items-center gap-1"><MapPin className="w-4 h-4" /> {memberProfile.location}</div>
+                                <div className="flex items-center gap-1"><Calendar className="w-4 h-4" /> Joined {memberProfile.joined}</div>
                             </div>
 
                             <div className="flex flex-wrap gap-2 mt-4">
-                                {memberData.skills.map(skill => (
+                                {memberProfile.skills.map(skill => (
                                     <Badge key={skill} variant="secondary" className="bg-white/5 text-zinc-300 hover:bg-white/10">
                                         {skill}
                                     </Badge>
@@ -119,30 +88,30 @@ export default function MemberDetailPage() {
                         <Card className="bg-zinc-900/50 border-white/10">
                             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-zinc-400">Total Commits</CardTitle></CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-white">{memberData.performance.commits}</div>
+                                <div className="text-2xl font-bold text-white">{memberProfile.performance.commits}</div>
                                 <p className="text-xs text-emerald-400 mt-1">+12 this week</p>
                             </CardContent>
                         </Card>
                         <Card className="bg-zinc-900/50 border-white/10">
                             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-zinc-400">PRs Merged</CardTitle></CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-white">{memberData.performance.prs}</div>
+                                <div className="text-2xl font-bold text-white">{memberProfile.performance.prs}</div>
                                 <p className="text-xs text-zinc-500 mt-1">High collaboration</p>
                             </CardContent>
                         </Card>
                         <Card className="bg-zinc-900/50 border-white/10">
                             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-zinc-400">Deployments</CardTitle></CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-white">{memberData.performance.deployments}</div>
+                                <div className="text-2xl font-bold text-white">{memberProfile.performance.deployments}</div>
                                 <p className="text-xs text-zinc-500 mt-1">To production</p>
                             </CardContent>
                         </Card>
                         <Card className="bg-zinc-900/50 border-white/10 relative overflow-hidden">
                             <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-zinc-400">Productivity Score</CardTitle></CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-cyan-400">{memberData.performance.score}/100</div>
+                                <div className="text-2xl font-bold text-cyan-400">{memberProfile.performance.score}/100</div>
                                 <div className="h-2 w-full rounded-full bg-zinc-800 overflow-hidden">
-                                    <div className={`h-full w-[${memberData.performance.score}%] rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.6)]"`} />
+                                    <div className={`h-full w-[${memberProfile.performance.score}%] rounded-full bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.6)]"`} />
                                 </div>
                             </CardContent>
                         </Card>
@@ -167,7 +136,7 @@ export default function MemberDetailPage() {
                                     </div>
                                     <div className="flex-1 pt-1">
                                         <div className="text-sm text-zinc-200">
-                                            <span className="font-semibold">{memberData.name}</span> {log.action} <span className="text-cyan-400 font-mono bg-cyan-950/30 px-1 rounded">{log.target}</span>
+                                            <span className="font-semibold">{memberProfile.name}</span> {log.action} <span className="text-cyan-400 font-mono bg-cyan-950/30 px-1 rounded">{log.target}</span>
                                         </div>
                                         <div className="text-xs text-zinc-500 mt-1 flex items-center gap-2">
                                             <Clock className="w-3 h-3" /> {log.time}
