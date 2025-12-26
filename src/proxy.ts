@@ -1,7 +1,7 @@
 // src/middleware.ts
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server';
-import { userVerify } from './lib/session';
+import { userVerifyByToken } from './lib/session';
 
 interface LogData {
     path: string;
@@ -28,7 +28,8 @@ export async function proxy(request: NextRequest) {
 
     const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
     const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-    const user = token ? await userVerify(token) : null;
+    const user = token ? await userVerifyByToken(token) : null;
+
     // If user is logged in, redirect them from auth routes to the dashboard
     if (isAuthRoute && user) {
         return NextResponse.redirect(new URL('/dashboard', request.url));

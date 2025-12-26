@@ -11,14 +11,15 @@ import Image from "next/image";
 import { useActionState, useEffect, useState } from "react";
 import { registerAction } from "@/app/_actions/authActions";
 import { toast } from "sonner";
-import { signIn, signOut, useSession } from "next-auth/react";
-import { removeToken } from "@/lib/utils/auth";
+import { signIn, useSession } from "next-auth/react";
+import { getCodeVerification } from "@/lib/utils/auth";
 
 export default function RegisterPage() {
     const router = useRouter()
     const [isPendingGoogle, setIsPendingGoogle] = useState(false);
     const [state, formAction, isPending] = useActionState(registerAction, null);
     const { data: session } = useSession();
+    const [user, setUser] = useState(null);
     const form = useForm({
         defaultValues: {
             email: "",
@@ -26,6 +27,8 @@ export default function RegisterPage() {
             confirm_password: "",
         },
     });
+
+
 
     useEffect(() => {
         if (state?.user) {
@@ -37,42 +40,39 @@ export default function RegisterPage() {
                 router.replace("/otp", { scroll: false });
             }
         }
-    }, [session, state, formAction, router]);
-    async function signInWith(provider: string): Promise<void> {
-        setIsPendingGoogle(true);
-        try {
-            if (session) {
-                await removeToken();
-                await signOut();
+
+        getCodeVerification().then((codeVerification) => {
+            if (codeVerification) {
+                setUser(codeVerification);
+                form.setValue("email", codeVerification.email);
+            } else {
+                setUser(null);
+                form.setValue("email", "");
             }
-
-            // console.log(status.replace("loading", ""));
-            // 
-            await signIn(provider, {
-                callbackUrl: "/dashboard",
-                redirect: true,
-                pages: {
-                    signIn: "/login",
-                    error: "/login",
-                    signOut: "/login",
-                    newUser: "/register"
-                }
-
-            }).catch((error: any) => {
-                if (error) {
-                    toast.error(error.message, { duration: 5000 });
-                    router.replace('/login', { scroll: false });
-                }
+        });
+    }, [session, state, formAction, router, form]);
+    function signUpWithGoogle(provider: string) {
+        setIsPendingGoogle(true);
+        signIn(provider, {
+            callbackUrl: "/otp",
+            redirect: true,
+            pages: {
+                signIn: "/login",
+                error: "/login",
+                signOut: "/login",
+                newUser: "/register"
+            }
+        }).catch((error: any) => {
+            if (error) {
+                toast.error(error.message, { duration: 5000 });
                 router.replace('/login', { scroll: false });
-                setIsPendingGoogle(false);
-            });
-        } catch (error: any) {
-            toast.error(error.message, { duration: 5000 });
-            setIsPendingGoogle(false);
+            }
             router.replace('/login', { scroll: false });
-        }
+            setIsPendingGoogle(false);
+        });;
     }
-    return (
+
+    return user && (
         <div className="relative w-full min-h-screen bg-black  text-white overflow-x-hidden">
             {/* <Image
                 src="/src/images/illustration/login.png"
@@ -91,10 +91,10 @@ export default function RegisterPage() {
                     <div className="w-full max-w-md space-y-8">
                         <div className="text-center lg:text-left">
                             <h1 className="text-xl md:text-4xl  font-bold tracking-tight text-white">
-                                Buat Akun Baru.
+                                Buat Password Baru.
                             </h1>
                             <p className="max-md:text-sm mt-2 text-zinc-400">
-                                Mulai perjalanan SaaS Anda dalam hitungan menit.
+                                Buat password baru untuk akun Anda.
                             </p>
                         </div>
 
@@ -105,14 +105,14 @@ export default function RegisterPage() {
                                     control={form.control}
                                     name="email"
                                     render={({ field }) => (
-                                        <FormItem>
+                                        <FormItem className="hidden">
                                             <FormLabel className="text-zinc-300">Email</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    disabled={isPending || isPendingGoogle}
+
                                                     type="email"
                                                     placeholder="nama@perusahaan.com"
-                                                    className="bg-zinc-900/50 border-white/10 text-white placeholder:text-zinc-600 focus:border-cyan-500/50 h-12 rounded-xl"
+                                                    className="hidden bg-zinc-900/50 border-white/10 text-white placeholder:text-zinc-600 focus:border-cyan-500/50 h-12 rounded-xl"
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -129,6 +129,7 @@ export default function RegisterPage() {
                                             <FormLabel className="text-zinc-300">Password</FormLabel>
                                             <FormControl>
                                                 <Input
+                                                    autoFocus
                                                     disabled={isPending || isPendingGoogle}
                                                     type="password"
                                                     placeholder="••••••••"
@@ -175,44 +176,12 @@ export default function RegisterPage() {
                                                 <span>Permintaan sedang diproses...</span>
                                             </div>
                                         ) : (
-                                            "Daftar"
+                                            "Lanjutkan"
                                         )
                                     }
                                 </Button>
                             </form>
                         </Form>
-
-                        <div className="relative my-6">
-                            <div className="absolute inset-0 flex items-center">
-                                <span className="w-full border-t border-white/10" />
-                            </div>
-                            <div className="relative flex justify-center text-xs uppercase">
-                                <span className="bg-black/10 px-2 text-zinc-400">Atau daftar dengan</span>
-                            </div>
-                        </div>
-
-                        <Button variant="outline" disabled={isPending || isPendingGoogle} onClick={() => signInWith('google')} type="button" className="w-full h-12 rounded-xl border-white/10 bg-white/5 hover:bg-white/10 hover:text-white text-zinc-300 gap-2">
-                            {
-                                !isPendingGoogle ? (
-                                    <>
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-5 h-5"><path fill="#4285F4" d="M23.495 12.281c0-.813-.066-1.63-.207-2.43H12.004v4.606h6.462a5.537 5.537 0 0 1-2.391 3.635v2.99h3.855c2.263-2.084 3.565-5.161 3.565-8.8z"></path><path fill="#34A853" d="M12.004 23.97c3.227 0 5.948-1.06 7.93-2.889l-3.855-2.989c-1.072.73-2.457 1.143-4.07 1.143-3.121 0-5.767-2.105-6.717-4.936H1.314v3.081a11.964 11.964 0 0 0 10.69 6.59z"></path><path fill="#FBBC04" d="M5.288 14.299a7.165 7.165 0 0 1 0-4.58V6.637H1.314a11.973 11.973 0 0 0 0 10.743l3.974-3.08z"></path><path fill="#EA4335" d="M12.004 4.778a6.5 6.5 0 0 1 4.59 1.793l3.415-3.415A11.497 11.497 0 0 0 12.004.044a11.96 11.96 0 0 0-10.69 6.593L5.288 9.72c.945-2.835 3.596-4.941 6.716-4.941z"></path></svg>
-                                        Google
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4 h-4 animate-spin"></svg>
-                                        <span>Permintaan sedang diproses...</span>
-                                    </>
-                                )
-                            }
-                        </Button>
-
-                        <p className="text-center text-sm text-zinc-500">
-                            Sudah punya akun?{" "}
-                            <Link href="/login" className="font-semibold text-cyan-400 hover:text-cyan-300">
-                                Login
-                            </Link>
-                        </p>
                     </div>
                 </div>
 

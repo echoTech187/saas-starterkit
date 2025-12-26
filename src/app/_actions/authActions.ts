@@ -2,8 +2,10 @@
 "use server";
 import { authUseCase } from "@/di/modules";
 import { loginSchema } from "@/lib/validations/auth";
-import { IUser } from "@/core/entities/IUser";
+import { IUser, User } from "@/core/entities/IUser";
 import { registerSchema } from "@/lib/validations/register";
+import { randomInt } from "crypto";
+import { cookies } from "next/headers";
 
 export async function signinAction(prevState: any, formData: FormData) {
     const username = formData.get("username") as string;
@@ -29,23 +31,18 @@ export async function signinAction(prevState: any, formData: FormData) {
                 errors: result.errors,
             };
         } else {
-            // const storeCookies = await cookies();
-            // storeCookies.set("token", result?.token || "", {
-            //     httpOnly: true,
-            //     secure: process.env.NODE_ENV === "production",
-            //     maxAge: 60 * 60 * 24, // 1 hari
-            // });
             return {
                 success: true,
                 message: "Login berhasil!",
-                description: "Selamat datang kembali " + result.username + ".",
-            };
+                description: "Selamat datang kembali " + result.user?.username + ".",
+            }
+
         }
 
-    } catch {
+    } catch (error: any) {
         return {
             success: false,
-            message: "Login gagal. Mohon cek kembali input Anda.",
+            message: error.message || "Login gagal. Mohon cek kembali input Anda.",
             errors: { username: ["Login gagal. Mohon cek kembali input Anda."], password: ["Login gagal. Mohon cek kembali input Anda."] },
         };
     }
@@ -57,7 +54,7 @@ export async function registerAction(prevState: any, formData: FormData) {
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirm_password") as string;
 
-    const validate = registerSchema.safeParse({ confirmPassword, email, password });
+    const validate = registerSchema.safeParse({ email, password, confirmPassword });
     if (!validate.success) {
         const errors = validate.error.flatten().fieldErrors;
         return {
@@ -67,19 +64,46 @@ export async function registerAction(prevState: any, formData: FormData) {
         };
     }
     try {
-        const result = await authUseCase.register(email, password, confirmPassword);
-        if (!result.success) {
+        const result = await authUseCase.checkUserByEmail(email);
+        if (result.exists === true) {
             return {
                 success: false,
-                message: result.message,
-                errors: result.errors,
+                message: "Email sudah terdaftar. Silahkan login",
+                errors: { email: ["Email sudah terdaftar. Silahkan login"] },
             };
         } else {
-            return {
-                success: true,
-                message: "Login berhasil!",
-                description: "Selamat datang kembali " + result.username + ".",
-            };
+            const codeVerification = randomInt(100000, 999999).toString();
+            const user = {
+                username: email.split('@')[0],
+                email: email,
+                password: password,
+                confirmPassword: confirmPassword,
+                code: codeVerification,
+            }
+            const storeCookies = await cookies();
+            storeCookies.set("codeVerification", JSON.stringify(user), {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === "production",
+                maxAge: 60 * 60, // 1 jam
+            });
+            const isSendEmailCodeVerification = await authUseCase.sendEmailCodeVerification(email, codeVerification);
+
+            if (!isSendEmailCodeVerification.success) {
+                return {
+                    success: false,
+                    message: "Pendaftaran gagal. Mohon cek kembali input Anda.",
+                    errors: { email: ["Pendaftaran gagal. Mohon cek kembali input Anda."] },
+                };
+            } else {
+                return {
+                    success: true,
+                    message: "Pendaftaran berhasil!",
+                    description: "Selamat pendaftaran berhasil. Silahkan cek email Anda untuk melakukan verifikasi.",
+                    user: user,
+                    provider: "credentials"
+                };
+            }
+
         }
 
     } catch {
@@ -91,6 +115,97 @@ export async function registerAction(prevState: any, formData: FormData) {
     }
 }
 
+export async function resendCodeVerificationAction() {
+    const cookieStore = await cookies();
+    const session = cookieStore.get("codeVerification")?.value;
+    const user = session ? JSON.parse(session) : null;
+    if (!user) {
+        return {
+            success: false,
+            message: "Verifikasi gagal. Mohon cek kembali input Anda.",
+            errors: { code: ["Verifikasi gagal. Mohon cek kembali input Anda."] },
+        };
+    }
+    try {
+        const codeVerification = user.code;
+        const isSendEmailCodeVerification = await authUseCase.sendEmailCodeVerification(user.email, codeVerification);
+
+        if (!isSendEmailCodeVerification.success) {
+            return {
+                success: false,
+                message: "Gagal mengirim ulang kode verifikasi. Silahkan coba beberapa saat lagi.",
+                errors: { email: ["Gagal mengirim ulang kode verifikasi. Silahkan coba beberapa saat lagi."] },
+            };
+        } else {
+            return {
+                success: true,
+                message: "Pendaftaran berhasil!",
+                description: "Selamat pendaftaran berhasil. Silahkan cek email Anda untuk melakukan verifikasi.",
+                user: user,
+                provider: "credentials"
+            };
+        }
+    } catch {
+        return {
+            success: false,
+            message: "Pendaftaran gagal. Mohon cek kembali input Anda.",
+            errors: { email: ["Pendaftaran gagal. Mohon cek kembali input Anda."] },
+        };
+    }
+}
+export async function verificationAction(prevState: any, formData: FormData) {
+    const code = formData.get("otp") as string;
+    const cookieStore = await cookies();
+    const session = cookieStore.get("codeVerification")?.value;
+    const user: User = session ? JSON.parse(session) : null;
+
+    if (!user) {
+        return {
+            success: false,
+            message: "Verifikasi gagal. Mohon cek kembali input Anda 1.",
+            errors: { code: ["Verifikasi gagal. Mohon cek kembali input Anda."] },
+        };
+    }
+
+    try {
+        if (user.code !== code) {
+            return {
+                success: false,
+                message: "Verifikasi gagal. Mohon cek kembali input Anda 2.",
+                errors: { code: ["Verifikasi gagal. Mohon cek kembali input Anda."] },
+            };
+        }
+        const account = {
+            email: user.email,
+            password: user.password,
+            confirmPassword: user.confirmPassword,
+        }
+
+        const result = await authUseCase.register(account);
+        if (!result.success) {
+            return {
+                success: result.success,
+                message: result.message,
+                errors: { code: ["Verifikasi gagal. Mohon cek kembali input Anda."] },
+            };
+        } else {
+            cookieStore.delete("codeVerification");
+            return {
+                success: true,
+                message: "Verifikasi berhasil!",
+                description: "Selamat verifikasi berhasil. Silahkan login untuk melanjutkan.",
+                user: result.user,
+                provider: "credentials"
+            };
+        }
+    } catch (error: any) {
+        return {
+            success: false,
+            message: error.message || "Verifikasi gagal. Mohon cek kembali input Anda 3.",
+            errors: { code: ["Verifikasi gagal. Mohon cek kembali input Anda."] },
+        };
+    }
+}
 
 export async function decodeToken(token: string): Promise<IUser> {
     const response = await authUseCase.executeUserProfile(token);

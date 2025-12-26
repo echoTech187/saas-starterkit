@@ -5,6 +5,7 @@ import CredentialsProvider from "next-auth/providers/credentials"
 import { authUseCase } from "@/di/modules"
 import { setToken } from "@/lib/utils/auth"
 import { cookies } from "next/headers"
+import { randomInt } from "crypto"
 
 const handler = NextAuth({
     providers: [
@@ -25,7 +26,6 @@ const handler = NextAuth({
                     };
                 }
                 const result = await authUseCase.execute(credentials.username, credentials.password);
-                console.log(result);
                 if (result.success && result.token) {
                     const user: any = {
                         id: result?.user?.id,
@@ -52,12 +52,10 @@ const handler = NextAuth({
             clientId: process.env.GOOGLE_CLIENT_ID ?? "",
             clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
             profile(profile) {
-                // This callback normalizes the provider's profile data
-                // to a standard User object that your app expects.
                 return {
                     id: profile.sub,
                     slug: profile.sub,
-                    username: profile.name,
+                    username: profile.email.split('@')[0],
                     fullname: profile.name,
                     email: profile.email,
                     image: profile.picture,
@@ -78,7 +76,8 @@ const handler = NextAuth({
     secret: process.env.JWT_SECRET,
     callbacks: {
         signIn: async ({ user, account, profile }) => {
-            if (account?.provider === "google") {
+
+            if (account?.provider === "google" && account?.type === "oauth") {
                 if (!profile?.email) {
                     // Deny access if the Google profile doesn't have an email.
                     return false;
@@ -86,23 +85,42 @@ const handler = NextAuth({
 
                 // Check if the user already exists in your database.
                 const userExists = await authUseCase.checkUserByEmail(profile.email);
-                console.log('userExists', userExists);
                 if (userExists.exists) {
-                    // If they exist, allow the sign-in.
                     return true;
                 } else {
+                    const codeVerification = randomInt(100000, 999999).toString();
+                    const user = {
+                        providerAccountId: account.providerAccountId,
+                        provider: account.provider,
+                        type: account.type,
+                        username: profile?.email?.split('@')[0],
+                        fullname: profile?.name,
+                        email: profile?.email,
+                        image: profile?.image,
+                        code: codeVerification,
+                    }
+                    const result = await authUseCase.register(user);
+                    if (!result.success) return false;
+                    const storeCookies = await cookies();
+                    storeCookies.set("codeVerification", JSON.stringify(user), {
+                        httpOnly: true,
+                        secure: process.env.NODE_ENV === "production",
+                        maxAge: 60 * 60, // 1 jam
+                    });
 
-                    return false
+                    return `/new-password`; // Redirect to a page where the user can set a new password
+
+
                 }
-            } else if (account?.provider === "credentials") {
-                if (!user) return false
+            } else if (account?.provider === "credentials" && account?.type === "credentials") {
+                if (!user.email) return false
                 return true;
             }
             return false;
         },
-        async jwt({ token, user, account }) {
+
+        async jwt({ token, user, account, profile }) {
             // `user` and `account` are only passed on initial sign-in
-            console.log('jwt', user, account);
             if (account && user) {
                 let sessionToken: string | undefined;
 
@@ -111,7 +129,17 @@ const handler = NextAuth({
                     sessionToken = (user as any).token;
                 } else if (account.provider === 'google') {
                     // For Google, we use the id_token from the account
-                    sessionToken = account.id_token;
+                    const userInfo = {
+                        providerAccountId: account.providerAccountId,
+                        provider: account.provider,
+                        type: account.type,
+                        username: profile?.email?.split('@')[0],
+                        fullname: profile?.name,
+                        email: profile?.email,
+                        image: user.image,
+                    }
+                    const loginwithgoogle = await authUseCase.loginWithGoogle(userInfo);
+                    sessionToken = loginwithgoogle.token;
                 }
 
                 if (sessionToken) {

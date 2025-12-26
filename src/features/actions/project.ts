@@ -40,7 +40,6 @@ async function createProjectAction(prevState: ActionState, formData: FormData): 
     };
 
     try {
-        console.log("Saving Project JSON:", JSON.stringify(finalProjectData, null, 2));
         await new Promise((resolve) => setTimeout(resolve, 1500));
     } catch (error) {
         return {

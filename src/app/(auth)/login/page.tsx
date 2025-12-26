@@ -33,31 +33,15 @@ function LoginPageContent() {
     useEffect(() => {
 
         if (state?.success) {
-            toast.success(state?.message, { duration: 5000 });
-            signIn('credentials', { username: form.getValues("username"), password: form.getValues("password") });
-        }
-        if (!session) {
-            const error = searchParams.get("error");
-            if (error) {
-                let errorMessage = "Email tidak terdaftar. Silakan daftar terlebih dahulu.";
-                switch (error) {
-                    case "CredentialsSignin":
-                        errorMessage = "Ups, username atau password sepertinya salah. Coba cek lagi ya.";
-                        break;
-                    case "GoogleNoEmail":
-                        errorMessage = "Kami tidak bisa mendapatkan email dari akun Google-mu. Pastikan ada email utama di akun Google kamu.";
-                        break;
-                    case "DatabaseCheckFailed":
-                        errorMessage = "Waduh, server kami sedang ada gangguan. Coba lagi nanti ya.";
-                        break;
-                    case "OAuthAccountNotLinked":
-                        errorMessage = "Email ini sudah terdaftar dengan cara lain. Coba masuk dengan metode sebelumnya ya (misalnya Google, atau dengan password).";
-                        break;
+            toast.success(state?.message, { duration: 5000, description: state?.description || "" });
+            signIn('credentials', { username: form.getValues("username"), password: form.getValues("password") }).catch((error: any) => {
+                if (error) {
+                    toast.error(error.message, { duration: 5000 });
+                    router.replace('/login', { scroll: false });
+
                 }
-                toast.error(errorMessage);
-                // Clears the error from the URL without reloading the page.
                 router.replace('/login', { scroll: false });
-            }
+            });
         }
 
     }, [state, form, session, searchParams, router]);
@@ -81,21 +65,15 @@ function LoginPageContent() {
                     error: "/login",
                     signOut: "/login",
                     newUser: "/register"
-                },
-                onSuccess: (callbackUrl: string) => {
+                }
 
-                    router.replace(callbackUrl);
-                },
-                onError: (error: any) => {
-                    setIsPendingGoogle(false);
+            }).catch((error: any) => {
+                if (error) {
                     toast.error(error.message, { duration: 5000 });
                     router.replace('/login', { scroll: false });
-                },
-
-            }).then(() => {
+                }
+                router.replace('/login', { scroll: false });
                 setIsPendingGoogle(false);
-
-
             });
         } catch (error: any) {
             toast.error(error.message, { duration: 5000 });
@@ -184,10 +162,10 @@ function LoginPageContent() {
                                     disabled={isPending || isPendingGoogle}
                                     className="w-full h-12 rounded-xl bg-linear-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold shadow-lg shadow-cyan-500/20 transition-all hover:scale-[1.02]"
                                 >
-                                    {isPending ? (
+                                    {isPendingGoogle ? (
                                         <div className="flex items-center gap-2">
                                             <Loader2 className="animate-spin w-4 h-4" />
-                                            <span>Memuat...</span>
+                                            <span>Permintaan sedang diproses...</span>
                                         </div>
                                     ) : "Masuk"}
                                 </Button>

@@ -15,8 +15,14 @@ async function removeToken() {
 
     return true;
 }
+async function getCodeVerification() {
+    const cookiesStore = await cookies();
+    const session = cookiesStore.get("codeVerification")?.value;
+    const code = session ? JSON.parse(session) : null;
+    return code;
+
+}
 
 
 
-
-export { setToken, getToken, removeToken };
+export { setToken, getToken, removeToken, getCodeVerification };

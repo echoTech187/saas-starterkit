@@ -1,26 +1,73 @@
 "use client";
 
-import { useForm, FieldValues } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Form, FormField } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { getCodeVerification } from "@/lib/utils/auth";
+import { resendCodeVerificationAction, verificationAction } from "@/app/_actions/authActions";
+import { User } from "@/core/entities/IUser";
+import { toast } from "sonner";
+
 
 
 export default function OTPPage() {
     const form = useForm();
     const router = useRouter()
+    const [state, formAction, isPending] = useActionState(verificationAction, null);
     const [value, setValue] = useState("");
+    const [user, setUser] = useState<User | null>(null);
+    const [resend, setResend] = useState(false);
+    const [countdown, setCountdown] = useState(3);
+    const [isCounting, setIsCounting] = useState(false);
 
-    async function onSubmit(data: FieldValues) {
-        console.log(data);
-        router.push('/login'); // Redirect setelah sukses
+
+    useEffect(() => {
+        if (state?.success) {
+            toast.success(state.message);
+            router.push("/login");
+        }
+        console.log(value);
+        async function getUserData() {
+            const codeVerification = await getCodeVerification();
+            if (codeVerification) {
+                setUser(codeVerification);
+            }
+        }
+        console.log(state);
+        getUserData();
+    }, [state, router, value]);
+
+    useEffect(() => {
+        let interval: NodeJS.Timeout;
+        if (isCounting && countdown > 0) {
+            interval = setInterval(() => {
+                setCountdown((prev) => prev - 1);
+            }, 1000);
+        }
+        return () => clearInterval(interval);
+    }, [isCounting, countdown]);
+
+
+    async function startCountdown(minutes: number) {
+        const seconds = minutes * 60;
+        setCountdown(seconds);
+        setIsCounting(true);
+        setResend(true);
+        await resendCodeVerificationAction();
+        setResend(false);
     }
 
-    return (
+    const formatTime = (time: number) => {
+        const minutes = Math.floor(time / 60);
+        const seconds = time % 60;
+        return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    };
+    return user && (
         <div className="relative w-full min-h-screen bg-black  text-white overflow-hidden">
             <Image
                 src="/src/images/illustration/login.png"
@@ -44,18 +91,20 @@ export default function OTPPage() {
                         </div>
                         <h1 className="text-2xl font-bold text-white">Verifikasi OTP</h1>
                         <p className="text-zinc-400 mt-2 text-sm">
-                            Kami telah mengirimkan kode 6 digit ke email Anda. Masukkan di bawah ini.
+                            Kami telah mengirimkan kode 6 digit ke email {user ? user.email : ''}. Masukkan di bawah ini.
                         </p>
                     </div>
 
                     <Form {...form} >
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                        <form action={formAction} className="space-y-8">
                             <div className="flex justify-center">
                                 <FormField
                                     control={form.control}
                                     name="otp"
                                     render={() => (
                                         <InputOTP
+                                            name="otp"
+                                            disabled={isPending}
                                             maxLength={6}
                                             value={value}
                                             onChange={(value) => setValue(value)}
@@ -77,20 +126,42 @@ export default function OTPPage() {
                             </div>
 
                             <Button
+                                disabled={isPending}
                                 type="submit"
                                 className="w-full h-11 bg-cyan-500 hover:bg-cyan-400 text-black font-bold shadow-lg shadow-cyan-500/20"
                             >
-                                Verifikasi & Masuk
+                                {
+                                    isPending ? (
+                                        <div className="flex items-center justify-center">
+                                            <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 2.03 5.734 5.156 7.002.8.293 1.664-.189 1.664-1.087A5.46 5.46 0 0110 17.5a5.46 5.46 0 012.936 2.657c0 .898-.866 1.683-1.664 1.087A7.962 7.962 0 014 18z"></path>
+                                            </svg>
+                                            <span>Verifikasi sedang diproses...</span>
+                                        </div>
+                                    ) : (
+                                        "Verifikasi"
+                                    )
+                                }
+
                             </Button>
                         </form>
                     </Form>
 
-                    <p className="mt-6 text-sm text-zinc-500">
+                    <div className="mt-6 text-sm text-zinc-500">
                         Tidak menerima kode?{" "}
-                        <button onClick={() => alert("Resend trigger")} className="text-white hover:underline font-medium">
-                            Kirim Ulang
-                        </button>
-                    </p>
+                        {isCounting ? (
+                            <span className="text-white font-medium">
+                                Kirim ulang dalam {formatTime(countdown)}
+                            </span>
+                        ) : (
+                            <div className="inline-flex gap-2">
+                                <Button variant="link" size="sm" disabled={isCounting || resend} onClick={() => startCountdown(10)} className="text-white hover:underline font-medium p-0">
+                                    Kirim Ulang
+                                </Button>
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

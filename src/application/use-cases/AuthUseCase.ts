@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ApiResponse } from "@/core/entities/IResponse";
 import { IUser } from "@/core/entities/IUser";
 import { AuthRepository } from "@/core/repositories/AuthRepository";
@@ -8,8 +9,13 @@ export class AuthUseCase {
         const result = await this.authRepository.login(username, password);
         return result;
     }
-    async register(email: string, password: string, confirmPassword: string): Promise<ApiResponse> {
-        const result = await this.authRepository.register(email, password, confirmPassword);
+
+    async loginWithGoogle(account: any): Promise<ApiResponse> {
+        const result = await this.authRepository.loginWithGoogle(account);
+        return result;
+    }
+    async register(account: any): Promise<ApiResponse> {
+        const result = await this.authRepository.register(account);
         return result;
     }
 
@@ -20,4 +26,11 @@ export class AuthUseCase {
         const result = await this.authRepository.profile(token);
         return result;
     }
+
+    async sendEmailCodeVerification(email: string, code: string): Promise<ApiResponse> {
+        const result = await this.authRepository.sendEmailCodeVerification(email, code);
+        return result;
+    }
+
+
 }

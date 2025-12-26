@@ -26,3 +26,13 @@ export async function userVerify(email: string) {
 
     return user;
 }
+
+export async function userVerifyByToken(token: string) {
+    const user = await authUseCase.executeUserProfile(token);
+    if (user === null || user === undefined) {
+        await removeToken();
+        return null;
+    }
+
+    return user;
+}
