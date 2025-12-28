@@ -4,12 +4,14 @@ export interface IUser {
     username: string;
     phone_number?: string;
     slug: string;
+    image: string;
+    user_status: number;
     id: number;
+    code?: string;
 }
 
-export interface User {
+export interface UserProps {
     email: string;
     password: string;
     confirmPassword: string;
-    code: string;
 }

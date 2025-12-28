@@ -5,42 +5,26 @@ import { Form, FormField } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { useActionState, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { getCodeVerification } from "@/lib/utils/auth";
-import { resendCodeVerificationAction, verificationAction } from "@/app/_actions/authActions";
-import { User } from "@/core/entities/IUser";
+import { resendCodeVerificationAction } from "@/app/_actions/authActions";
 import { toast } from "sonner";
+import { IUser } from "@/core/entities/IUser";
+import { authUseCase } from "@/di/modules";
 
 
 
-export default function OTPPage() {
+export default function OutorizationPage(user: IUser) {
     const form = useForm();
     const router = useRouter()
-    const [state, formAction, isPending] = useActionState(verificationAction, null);
+    const [isPending, setIsPending] = useState(false);
     const [value, setValue] = useState("");
-    const [user, setUser] = useState<User | null>(null);
     const [resend, setResend] = useState(false);
     const [countdown, setCountdown] = useState(3);
     const [isCounting, setIsCounting] = useState(false);
 
 
-    useEffect(() => {
-        if (state?.success) {
-            toast.success(state.message);
-            router.push("/login");
-        }
-        console.log(value);
-        async function getUserData() {
-            const codeVerification = await getCodeVerification();
-            if (codeVerification) {
-                setUser(codeVerification);
-            }
-        }
-        console.log(state);
-        getUserData();
-    }, [state, router, value]);
 
     useEffect(() => {
         let interval: NodeJS.Timeout;
@@ -58,7 +42,14 @@ export default function OTPPage() {
         setCountdown(seconds);
         setIsCounting(true);
         setResend(true);
-        await resendCodeVerificationAction();
+        const resend = await resendCodeVerificationAction();
+        if (resend.success) {
+            toast.success(resend.message);
+        } else {
+            toast.error(resend.message);
+        }
+        setIsCounting(false);
+        setCountdown(2 * (minutes * 60));
         setResend(false);
     }
 
@@ -67,6 +58,28 @@ export default function OTPPage() {
         const seconds = time % 60;
         return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     };
+
+    async function onSubmit() {
+        setIsPending(true);
+        console.log(value.length === 6 && value === user.code?.toString());
+        console.log(value);
+        console.log(user);
+        console.log(user.code);
+
+        if (value.length === 6 && value === user.code?.toString()) {
+            const result = await authUseCase.registerCompleted(user.slug);
+            setIsPending(false);
+            if (result.success) {
+                toast.success(result.message, { duration: 3000 });
+                router.replace('/login', { scroll: false });
+            } else {
+                toast.error(result.message, { duration: 3000 });
+            }
+        } else {
+            setIsPending(false);
+            toast.error("Kode yang anda masukan salah", { duration: 5000 });
+        }
+    }
     return user && (
         <div className="relative w-full min-h-screen bg-black  text-white overflow-hidden">
             <Image
@@ -96,7 +109,7 @@ export default function OTPPage() {
                     </div>
 
                     <Form {...form} >
-                        <form action={formAction} className="space-y-8">
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                             <div className="flex justify-center">
                                 <FormField
                                     control={form.control}

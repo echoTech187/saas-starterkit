@@ -1,17 +1,17 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
+import { User } from "next-auth";
 import { ApiResponse } from "../entities/IResponse";
-import { IUser } from "../entities/IUser";
+import { IUser, UserProps } from "../entities/IUser";
 
 export interface AuthRepository {
     login(username: string, password: string): Promise<ApiResponse>;
-    loginWithGoogle(account: any): Promise<ApiResponse>;
-    register(account: any): Promise<ApiResponse>;
+    loginWithGoogle(account: User | IUser): Promise<ApiResponse>;
+    register(account: UserProps): Promise<ApiResponse>;
+    registerWithGoogle(account: User): Promise<ApiResponse>;
+    registerCompleted(id: string): Promise<ApiResponse>;
     logout(): Promise<void>;
-    forgotPassword(email: string): Promise<void>;
-    resetPassword(token: string, newPassword: string): Promise<void>;
-    changePassword(oldPassword: string, newPassword: string): Promise<void>;
     checkUserByEmail(email: string): Promise<{ exists: boolean }>;
     profile(token: string): Promise<IUser>;
-    sendEmailCodeVerification(email: string, code: string): Promise<ApiResponse>;
+    sendEmailCodeVerification(email: string): Promise<ApiResponse>;
 
 }

@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ApiResponse } from "@/core/entities/IResponse";
-import { IUser } from "@/core/entities/IUser";
+import { IUser, UserProps } from "@/core/entities/IUser";
 import { AuthRepository } from "@/core/repositories/AuthRepository";
+import { User } from "next-auth";
 
 export class AuthUseCase {
     constructor(private authRepository: AuthRepository) { }
@@ -10,12 +10,16 @@ export class AuthUseCase {
         return result;
     }
 
-    async loginWithGoogle(account: any): Promise<ApiResponse> {
+    async loginWithGoogle(account: User | IUser): Promise<ApiResponse> {
         const result = await this.authRepository.loginWithGoogle(account);
         return result;
     }
-    async register(account: any): Promise<ApiResponse> {
+    async register(account: UserProps): Promise<ApiResponse> {
         const result = await this.authRepository.register(account);
+        return result;
+    }
+    async registerWithGoogle(account: User): Promise<ApiResponse> {
+        const result = await this.authRepository.registerWithGoogle(account);
         return result;
     }
 
@@ -27,10 +31,19 @@ export class AuthUseCase {
         return result;
     }
 
-    async sendEmailCodeVerification(email: string, code: string): Promise<ApiResponse> {
-        const result = await this.authRepository.sendEmailCodeVerification(email, code);
+    async sendEmailCodeVerification(email: string): Promise<ApiResponse> {
+        const result = await this.authRepository.sendEmailCodeVerification(email);
         return result;
     }
+    async registerCompleted(id: string): Promise<ApiResponse> {
+        const result = await this.authRepository.registerCompleted(id);
+        return result;
+    }
+    async logout(): Promise<void> {
+        await this.authRepository.logout();
+    }
+
+
 
 
 }

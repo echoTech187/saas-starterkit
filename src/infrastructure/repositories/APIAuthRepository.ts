@@ -2,6 +2,8 @@
 import { ApiResponse } from "@/core/entities/IResponse";
 import { IUser } from "@/core/entities/IUser";
 import { AuthRepository } from "@/core/repositories/AuthRepository";
+import { api } from "@/lib/api";
+
 
 export class APIAuthRepository implements AuthRepository {
     async login(username: string, password: string): Promise<ApiResponse> {
@@ -36,50 +38,31 @@ export class APIAuthRepository implements AuthRepository {
             };
         }
 
-        const response = await fetch(process.env.BACKEND_PUBLIC_API_URL + '/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(account)
-        });
+        const response: ApiResponse = await api.post('/register', account);
+        return response;
+    }
 
-        const result: ApiResponse = await response.json();
-        return result;
+    async registerWithGoogle(account: any): Promise<ApiResponse> {
+        const response: ApiResponse = await api.post('/register-with-google', account);
+        return response;
     }
     async logout(): Promise<void> {
         // Implementasi logout
         throw new Error("Method not implemented.");
     }
-    async forgotPassword(email: string): Promise<void> {
-        // Implementasi forgotPassword
-        throw new Error("Method not implemented.");
-    }
-    async resetPassword(token: string, newPassword: string): Promise<void> {
-        // Implementasi resetPassword
-        throw new Error("Method not implemented.");
-    }
-    async changePassword(oldPassword: string, newPassword: string): Promise<void> {
-        // Implementasi changePassword
-        throw new Error("Method not implemented.");
-    }
 
     async checkUserByEmail(email: string): Promise<{ exists: boolean }> {
         try {
-            const response = await fetch(process.env.BACKEND_PUBLIC_API_URL + '/check-user-by-email?email=' + email, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                if (data.user.user_status == 1) {
+            const data: ApiResponse = await api.get('/check-user-by-email?email=' + email);
+            if (!data.success) {
+                return { exists: false };
+            } else {
+                if (data.user?.user_status === 1) {
                     return { exists: false };
                 }
-                return { exists: data.success };
+                return { exists: true };
             }
+
         } catch (error) {
             console.error("Error checking user by email:", error);
         }
@@ -99,16 +82,22 @@ export class APIAuthRepository implements AuthRepository {
         const result = await response.json();
         return result.profile;
     }
-    async sendEmailCodeVerification(email: string, code: string): Promise<ApiResponse> {
+    async sendEmailCodeVerification(email: string): Promise<ApiResponse> {
         const response = await fetch(process.env.BACKEND_PUBLIC_API_URL + '/send-email-code-verification', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ email, code })
+            body: JSON.stringify({ email })
         });
         const result = await response.json();
         return result;
+    }
+
+    async registerCompleted(id: string): Promise<ApiResponse> {
+        const payload = { user_status: 2, updatedAt: new Date() };
+        const response: ApiResponse = await api.put('/register-completed/' + id, JSON.stringify(payload));
+        return response;
     }
 
 }

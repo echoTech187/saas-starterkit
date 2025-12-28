@@ -15,6 +15,7 @@ const nextConfig = {
     resolveExtensions: ['.mdx', '.tsx', '.ts', '.jsx', '.js', '.json'],
   },
   reactStrictMode: true,
+  devIndicators: false
 };
 
 export default nextConfig;

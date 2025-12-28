@@ -8,56 +8,38 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { signIn, useSession, signOut } from "next-auth/react";
-import { Suspense, useActionState, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { signinAction } from "@/app/_actions/authActions";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { Suspense, useState } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { removeToken } from "@/lib/utils/auth";
+import { removeToken, setToken } from "@/lib/utils/auth";
+import { loginSchema } from "@/lib/validations/auth";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 function LoginPageContent() {
     const router = useRouter();
     const { data: session } = useSession();
-
-    const searchParams = useSearchParams();
-    const [state, formAction, isPending] = useActionState(signinAction, null);
+    const [isPending, setIsPending] = useState(false);
     const [isPendingGoogle, setIsPendingGoogle] = useState(false);
 
     const form = useForm({
+        resolver: zodResolver(loginSchema),
         defaultValues: {
             username: "",
             password: "",
         },
     });
 
-    useEffect(() => {
-
-        if (state?.success) {
-            toast.success(state?.message, { duration: 5000, description: state?.description || "" });
-            signIn('credentials', { username: form.getValues("username"), password: form.getValues("password") }).catch((error: any) => {
-                if (error) {
-                    toast.error(error.message, { duration: 5000 });
-                    router.replace('/login', { scroll: false });
-
-                }
-                router.replace('/login', { scroll: false });
-            });
-        }
-
-    }, [state, form, session, searchParams, router]);
-
 
     async function signInWith(provider: string): Promise<void> {
+
+        await signOut();
+        await setToken("");
+        await removeToken();
+
         setIsPendingGoogle(true);
         try {
-            if (session) {
-                await removeToken();
-                await signOut();
-            }
-
-            // console.log(status.replace("loading", ""));
-            // 
-            await signIn(provider, {
+            const result = await signIn(provider, {
                 callbackUrl: "/dashboard",
                 redirect: true,
                 pages: {
@@ -67,20 +49,50 @@ function LoginPageContent() {
                     newUser: "/register"
                 }
 
-            }).catch((error: any) => {
-                if (error) {
-                    toast.error(error.message, { duration: 5000 });
-                    router.replace('/login', { scroll: false });
-                }
-                router.replace('/login', { scroll: false });
-                setIsPendingGoogle(false);
             });
+            setIsPendingGoogle(false);
+            if (result?.error) {
+                toast.error(result.error, { duration: 5000 });
+            } else {
+                setToken(session?.accessToken ?? "");
+                toast.success("Login berhasil!");
+                router.refresh();
+                router.push("/dashboard", { scroll: false });
+            }
         } catch (error: any) {
             toast.error(error.message, { duration: 5000 });
             setIsPendingGoogle(false);
             router.replace('/login', { scroll: false });
         }
+
     }
+    async function onSubmit(data: any) {
+        await signOut();
+        await setToken("");
+        await removeToken();
+        setIsPending(true);
+        const { username, password } = data;
+        try {
+            const result = await signIn("credentials", {
+                redirect: false,
+                username,
+                password
+            });
+            setIsPending(false);
+            if (result?.error) {
+                toast.error(result.error, { duration: 5000 });
+            } else {
+                await setToken(session?.accessToken ?? "");
+                toast.success("Login berhasil!");
+                router.refresh();
+                router.push("/dashboard", { scroll: false });
+            }
+        } catch (error: any) {
+            toast.error(error.message, { duration: 5000 });
+        }
+    }
+
+
 
     return (
         <div className="relative w-full min-h-screen bg-black  text-white overflow-x-hidden">
@@ -101,17 +113,9 @@ function LoginPageContent() {
                                 Masuk ke dashboard untuk mengelola SaaS Anda.
                             </p>
                         </div>
-                        {!state?.success && state?.message && (
-                            <div className="flex items-center gap-2 text-white text-sm px-4 py-2 group rounded bg-red-600/30 backdrop-blur-md border border-red-600/40">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-6 h-6 text-red-400 ">
-                                    <path fill="none" d="M0 0h24v24H0z" ></path>
-                                    <path fill="currentColor" d="M12 22C6.477 22 2 17.523 2 12S6.477 2 12 2s10 4.477 10 10-4.477 10-10 10zm0-2a8 8 0 1 0 0-16 8 8 0 0 0 0 16zm-1-5v2h2v-2h-2zm0-8v7h2V7h-2z"></path>
-                                </svg>
-                                <span>{state.message}</span>
-                            </div>
-                        )}
+
                         <Form {...form} >
-                            <form action={formAction} className="space-y-6">
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                                 <FormField
                                     control={form.control}
                                     name="username"

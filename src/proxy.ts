@@ -1,4 +1,3 @@
-// src/middleware.ts
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server';
 import { userVerifyByToken } from './lib/session';
@@ -13,7 +12,8 @@ interface LogData {
 }
 
 // This function is not awaited, so it runs in the background
-async function logToDatabase(data: LogData) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function logToDatabase(_data: LogData) {
     // Implement logging to an external service or database here
     // e.g., fetch('/api/log', { method: 'POST', body: JSON.stringify(data) });
 }

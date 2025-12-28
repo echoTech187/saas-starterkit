@@ -1,25 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useForm } from "react-hook-form";
+import { FieldValues, useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useActionState, useEffect, useState } from "react";
-import { registerAction } from "@/app/_actions/authActions";
+import { useState } from "react";
 import { toast } from "sonner";
-import { signIn, signOut, useSession } from "next-auth/react";
-import { removeToken } from "@/lib/utils/auth";
+import { signIn } from "next-auth/react";
+import { authUseCase } from "@/di/modules";
+import { IUser } from "@/core/entities/IUser";
+import OutorizationPage from "../otp/page";
+import { registerSchema } from "@/lib/validations/register";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export default function RegisterPage() {
     const router = useRouter()
     const [isPendingGoogle, setIsPendingGoogle] = useState(false);
-    const [state, formAction, isPending] = useActionState(registerAction, null);
-    const { data: session } = useSession();
+    const [isPending, setIsPending] = useState(false);
+    const [user, setUser] = useState<IUser | null>(null);
     const form = useForm({
+        resolver: zodResolver(registerSchema),
         defaultValues: {
             email: "",
             password: "",
@@ -27,27 +31,28 @@ export default function RegisterPage() {
         },
     });
 
-    useEffect(() => {
-        if (state?.user) {
-            if (!state?.success) {
-                toast.error(state?.message);
-            }
-            if (state?.success) {
-                toast.success("Selamat, akun Anda berhasil dibuat!", { duration: 3000, description: state?.message });
-                router.replace("/otp", { scroll: false });
-            }
+    async function onSubmit(values: FieldValues) {
+        setIsPending(true);
+        const result = await authUseCase.register({
+            email: values.email as string,
+            password: values.password as string,
+            confirmPassword: values.confirm_password as string,
+        });
+        setIsPending(false);
+        if (result.success) {
+            setUser(result.user as IUser);
+            toast.success(result.message, { duration: 5000 });
+            router.refresh();
+            router.push("/register", { scroll: false });
+        } else {
+            toast.error(result.message, { duration: 5000 });
         }
-    }, [session, state, formAction, router]);
+    }
+
+
     async function signInWith(provider: string): Promise<void> {
         setIsPendingGoogle(true);
         try {
-            if (session) {
-                await removeToken();
-                await signOut();
-            }
-
-            // console.log(status.replace("loading", ""));
-            // 
             await signIn(provider, {
                 callbackUrl: "/dashboard",
                 redirect: true,
@@ -72,7 +77,7 @@ export default function RegisterPage() {
             router.replace('/login', { scroll: false });
         }
     }
-    return (
+    return !user ? (
         <div className="relative w-full min-h-screen bg-black  text-white overflow-x-hidden">
             {/* <Image
                 src="/src/images/illustration/login.png"
@@ -99,7 +104,7 @@ export default function RegisterPage() {
                         </div>
 
                         <Form {...form} >
-                            <form action={formAction} className="space-y-4">
+                            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
 
                                 <FormField
                                     control={form.control}
@@ -253,5 +258,5 @@ export default function RegisterPage() {
 
             </div>
         </div>
-    );
+    ) : <OutorizationPage {...user} />;
 }

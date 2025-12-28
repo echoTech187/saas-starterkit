@@ -1,22 +1,19 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useActionState, useEffect, useState } from "react";
 import { registerAction } from "@/app/_actions/authActions";
 import { toast } from "sonner";
-import { signIn, useSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { getCodeVerification } from "@/lib/utils/auth";
 
 export default function RegisterPage() {
     const router = useRouter()
-    const [isPendingGoogle, setIsPendingGoogle] = useState(false);
     const [state, formAction, isPending] = useActionState(registerAction, null);
     const { data: session } = useSession();
     const [user, setUser] = useState(null);
@@ -31,13 +28,13 @@ export default function RegisterPage() {
 
 
     useEffect(() => {
-        if (state?.user) {
+        if (session?.accessToken) {
             if (!state?.success) {
                 toast.error(state?.message);
             }
             if (state?.success) {
                 toast.success("Selamat, akun Anda berhasil dibuat!", { duration: 3000, description: state?.message });
-                router.replace("/otp", { scroll: false });
+                router.replace("/otp?token=" + session?.accessToken, { scroll: false });
             }
         }
 
@@ -51,26 +48,6 @@ export default function RegisterPage() {
             }
         });
     }, [session, state, formAction, router, form]);
-    function signUpWithGoogle(provider: string) {
-        setIsPendingGoogle(true);
-        signIn(provider, {
-            callbackUrl: "/otp",
-            redirect: true,
-            pages: {
-                signIn: "/login",
-                error: "/login",
-                signOut: "/login",
-                newUser: "/register"
-            }
-        }).catch((error: any) => {
-            if (error) {
-                toast.error(error.message, { duration: 5000 });
-                router.replace('/login', { scroll: false });
-            }
-            router.replace('/login', { scroll: false });
-            setIsPendingGoogle(false);
-        });;
-    }
 
     return user && (
         <div className="relative w-full min-h-screen bg-black  text-white overflow-x-hidden">
@@ -130,7 +107,7 @@ export default function RegisterPage() {
                                             <FormControl>
                                                 <Input
                                                     autoFocus
-                                                    disabled={isPending || isPendingGoogle}
+                                                    disabled={isPending}
                                                     type="password"
                                                     placeholder="••••••••"
                                                     className="bg-zinc-900/50 border-white/10 text-white placeholder:text-zinc-600 focus:border-cyan-500/50 h-12 rounded-xl"
@@ -150,7 +127,7 @@ export default function RegisterPage() {
                                             <FormLabel className="text-zinc-300">Konfirmasi Password</FormLabel>
                                             <FormControl>
                                                 <Input
-                                                    disabled={isPending || isPendingGoogle}
+                                                    disabled={isPending}
                                                     type="password"
                                                     placeholder="••••••••"
                                                     className="bg-zinc-900/50 border-white/10 text-white placeholder:text-zinc-600 focus:border-cyan-500/50 h-12 rounded-xl"
@@ -163,7 +140,7 @@ export default function RegisterPage() {
                                 />
 
                                 <Button
-                                    disabled={isPending || isPendingGoogle}
+                                    disabled={isPending}
                                     type="submit"
                                     className="w-full h-12 mt-4 rounded-xl bg-linear-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-semibold shadow-lg shadow-cyan-500/20"
                                 >

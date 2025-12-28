@@ -49,8 +49,8 @@ import { toast } from "sonner";
 import Image from "next/image";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
 import { removeToken } from "@/lib/utils/auth";
-import { IUser } from "@/core/entities/IUser";
 import { signOut } from "next-auth/react";
+import { User } from "next-auth";
 // Data Navigasi (Tetap)
 const data = {
     navMain: [
@@ -69,7 +69,7 @@ const initialTeams = [
     { id: "t2", name: "Nusantara Corp", plan: "Pro Plan", logo: "N" },
 ];
 
-export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sidebar> & { user: IUser }) {
+export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sidebar> & { user: User }) {
     const router = useRouter();
     const pathname = usePathname();
     const { state } = useSidebar();
@@ -93,7 +93,7 @@ export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sideb
         await removeToken();
         await signOut();
         toast.success("Logout berhasil. Sampai jumpa kembali!");
-        return router.push("/login");
+        router.push("/login");
     };
     // Handler: Buat Tim Baru
     const handleCreateTeam = () => {
@@ -268,7 +268,7 @@ export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sideb
                                 className="data-[state=open]:bg-white/10 data-[state=open]:text-white hover:bg-white/5 hover:text-white text-zinc-400 cursor-pointer group"
                             >
                                 <Avatar className="h-8 w-8 rounded-lg border border-white/10">
-                                    <AvatarImage src="" alt="@shadcn" />
+                                    <AvatarImage src={user.image} alt={user.username} />
                                     <AvatarFallback className="rounded-lg bg-zinc-800 text-zinc-400">CN</AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight ml-2">

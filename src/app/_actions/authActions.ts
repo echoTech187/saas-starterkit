@@ -2,9 +2,8 @@
 "use server";
 import { authUseCase } from "@/di/modules";
 import { loginSchema } from "@/lib/validations/auth";
-import { IUser, User } from "@/core/entities/IUser";
+import { IUser } from "@/core/entities/IUser";
 import { registerSchema } from "@/lib/validations/register";
-import { randomInt } from "crypto";
 import { cookies } from "next/headers";
 
 export async function signinAction(prevState: any, formData: FormData) {
@@ -59,7 +58,7 @@ export async function registerAction(prevState: any, formData: FormData) {
         const errors = validate.error.flatten().fieldErrors;
         return {
             success: false,
-            message: errors.email ? errors.email[0] : errors.password ? errors.password[0] : errors.confirmPassword ? errors.confirmPassword[0] : "",
+            message: errors.email ? errors.email[0] : errors.password ? errors.password[0] : errors.confirm_password ? errors.confirm_password[0] : "",
             errors: errors,
         };
     }
@@ -72,21 +71,8 @@ export async function registerAction(prevState: any, formData: FormData) {
                 errors: { email: ["Email sudah terdaftar. Silahkan login"] },
             };
         } else {
-            const codeVerification = randomInt(100000, 999999).toString();
-            const user = {
-                username: email.split('@')[0],
-                email: email,
-                password: password,
-                confirmPassword: confirmPassword,
-                code: codeVerification,
-            }
-            const storeCookies = await cookies();
-            storeCookies.set("codeVerification", JSON.stringify(user), {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === "production",
-                maxAge: 60 * 60, // 1 jam
-            });
-            const isSendEmailCodeVerification = await authUseCase.sendEmailCodeVerification(email, codeVerification);
+
+            const isSendEmailCodeVerification = await authUseCase.sendEmailCodeVerification(email);
 
             if (!isSendEmailCodeVerification.success) {
                 return {
@@ -99,7 +85,7 @@ export async function registerAction(prevState: any, formData: FormData) {
                     success: true,
                     message: "Pendaftaran berhasil!",
                     description: "Selamat pendaftaran berhasil. Silahkan cek email Anda untuk melakukan verifikasi.",
-                    user: user,
+                    user: { email },
                     provider: "credentials"
                 };
             }
@@ -127,8 +113,7 @@ export async function resendCodeVerificationAction() {
         };
     }
     try {
-        const codeVerification = user.code;
-        const isSendEmailCodeVerification = await authUseCase.sendEmailCodeVerification(user.email, codeVerification);
+        const isSendEmailCodeVerification = await authUseCase.sendEmailCodeVerification(user.email);
 
         if (!isSendEmailCodeVerification.success) {
             return {
@@ -157,7 +142,7 @@ export async function verificationAction(prevState: any, formData: FormData) {
     const code = formData.get("otp") as string;
     const cookieStore = await cookies();
     const session = cookieStore.get("codeVerification")?.value;
-    const user: User = session ? JSON.parse(session) : null;
+    const user = session ? JSON.parse(session) : null;
 
     if (!user) {
         return {
@@ -175,29 +160,29 @@ export async function verificationAction(prevState: any, formData: FormData) {
                 errors: { code: ["Verifikasi gagal. Mohon cek kembali input Anda."] },
             };
         }
-        const account = {
-            email: user.email,
-            password: user.password,
-            confirmPassword: user.confirmPassword,
-        }
+        // const account = {
+        //     email: user.email,
+        //     password: user.password,
+        //     confirmPassword: user.confirmPassword,
+        // }
 
-        const result = await authUseCase.register(account);
-        if (!result.success) {
-            return {
-                success: result.success,
-                message: result.message,
-                errors: { code: ["Verifikasi gagal. Mohon cek kembali input Anda."] },
-            };
-        } else {
-            cookieStore.delete("codeVerification");
-            return {
-                success: true,
-                message: "Verifikasi berhasil!",
-                description: "Selamat verifikasi berhasil. Silahkan login untuk melanjutkan.",
-                user: result.user,
-                provider: "credentials"
-            };
-        }
+        // const result = await authUseCase.register(account);
+        // if (!result.success) {
+        //     return {
+        //         success: result.success,
+        //         message: result.message,
+        //         errors: { code: ["Verifikasi gagal. Mohon cek kembali input Anda."] },
+        //     };
+        // } else {
+        //     cookieStore.delete("codeVerification");
+        //     return {
+        //         success: true,
+        //         message: "Verifikasi berhasil!",
+        //         description: "Selamat verifikasi berhasil. Silahkan login untuk melanjutkan.",
+        //         user: result.user,
+        //         provider: "credentials"
+        //     };
+        // }
     } catch (error: any) {
         return {
             success: false,
