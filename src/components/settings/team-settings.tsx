@@ -23,7 +23,6 @@ import { DialogHeader, DialogFooter } from "../ui/dialog";
 import { DropdownMenuSeparator } from "../ui/dropdown-menu";
 import { Member } from "@/lib/types/team-member";
 import { initialMembers } from "@/features/data/team-member";
-import { join } from "path";
 
 export function TeamSettings() {
 

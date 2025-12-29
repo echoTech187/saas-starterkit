@@ -272,7 +272,7 @@ export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sideb
                                     <AvatarFallback className="rounded-lg bg-zinc-800 text-zinc-400">CN</AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight ml-2">
-                                    <span className="truncate font-semibold text-white">{user.username}</span>
+                                    <span className="truncate font-semibold text-white capitalize">{user.username || user.name || user.fullname}</span>
                                     <span className="truncate text-xs">{user.email}</span>
                                 </div>
                                 <LogOut className="ml-auto size-4 group-hover:text-red-400 transition-colors" />

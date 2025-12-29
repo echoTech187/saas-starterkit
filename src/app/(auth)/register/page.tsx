@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { FieldValues, useForm } from "react-hook-form";
@@ -12,16 +11,16 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { signIn } from "next-auth/react";
 import { authUseCase } from "@/di/modules";
-import { IUser } from "@/core/entities/IUser";
 import OutorizationPage from "../otp/page";
 import { registerSchema } from "@/lib/validations/register";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { User } from "next-auth";
 
 export default function RegisterPage() {
     const router = useRouter()
     const [isPendingGoogle, setIsPendingGoogle] = useState(false);
     const [isPending, setIsPending] = useState(false);
-    const [user, setUser] = useState<IUser | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const form = useForm({
         resolver: zodResolver(registerSchema),
         defaultValues: {
@@ -40,7 +39,7 @@ export default function RegisterPage() {
         });
         setIsPending(false);
         if (result.success) {
-            setUser(result.user as IUser);
+            setUser(result.user as User);
             toast.success(result.message, { duration: 5000 });
             router.refresh();
             router.push("/register", { scroll: false });
@@ -52,30 +51,13 @@ export default function RegisterPage() {
 
     async function signInWith(provider: string): Promise<void> {
         setIsPendingGoogle(true);
-        try {
-            await signIn(provider, {
-                callbackUrl: "/dashboard",
-                redirect: true,
-                pages: {
-                    signIn: "/login",
-                    error: "/login",
-                    signOut: "/login",
-                    newUser: "/register"
-                }
 
-            }).catch((error: any) => {
-                if (error) {
-                    toast.error(error.message, { duration: 5000 });
-                    router.replace('/login', { scroll: false });
-                }
-                router.replace('/login', { scroll: false });
-                setIsPendingGoogle(false);
-            });
-        } catch (error: any) {
-            toast.error(error.message, { duration: 5000 });
-            setIsPendingGoogle(false);
-            router.replace('/login', { scroll: false });
-        }
+        await signIn(provider, {
+            callbackUrl: "/new-password",
+            redirect: true,
+        });
+
+        setIsPendingGoogle(false);
     }
     return !user ? (
         <div className="relative w-full min-h-screen bg-black  text-white overflow-x-hidden">

@@ -1,24 +1,23 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useForm } from "react-hook-form";
+import { FieldValues, useForm } from "react-hook-form";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { Suspense, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { removeToken, setToken } from "@/lib/utils/auth";
+import { removeToken } from "@/lib/utils/auth";
 import { loginSchema } from "@/lib/validations/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 function LoginPageContent() {
     const router = useRouter();
-    const { data: session } = useSession();
     const [isPending, setIsPending] = useState(false);
     const [isPendingGoogle, setIsPendingGoogle] = useState(false);
 
@@ -30,16 +29,10 @@ function LoginPageContent() {
         },
     });
 
-
     async function signInWith(provider: string): Promise<void> {
-
-        await signOut();
-        await setToken("");
-        await removeToken();
-
         setIsPendingGoogle(true);
         try {
-            const result = await signIn(provider, {
+            await signIn(provider, {
                 callbackUrl: "/dashboard",
                 redirect: true,
                 pages: {
@@ -48,48 +41,40 @@ function LoginPageContent() {
                     signOut: "/login",
                     newUser: "/register"
                 }
-
             });
-            setIsPendingGoogle(false);
-            if (result?.error) {
-                toast.error(result.error, { duration: 5000 });
-            } else {
-                setToken(session?.accessToken ?? "");
-                toast.success("Login berhasil!");
-                router.refresh();
-                router.push("/dashboard", { scroll: false });
-            }
+            // Kode di bawah ini tidak akan jalan karena redirect: true
         } catch (error: any) {
+            await signOut();
+            await removeToken();
+
             toast.error(error.message, { duration: 5000 });
             setIsPendingGoogle(false);
             router.replace('/login', { scroll: false });
         }
 
     }
-    async function onSubmit(data: any) {
-        await signOut();
-        await setToken("");
-        await removeToken();
+    async function onSubmit(values: FieldValues) {
+
         setIsPending(true);
-        const { username, password } = data;
-        try {
-            const result = await signIn("credentials", {
-                redirect: false,
-                username,
-                password
-            });
+        const { username, password } = values;
+
+        const result = await signIn("credentials", {
+            redirect: false,
+            username,
+            password
+        });
+
+        if (result?.error) {
             setIsPending(false);
-            if (result?.error) {
-                toast.error(result.error, { duration: 5000 });
-            } else {
-                await setToken(session?.accessToken ?? "");
-                toast.success("Login berhasil!");
-                router.refresh();
-                router.push("/dashboard", { scroll: false });
-            }
-        } catch (error: any) {
-            toast.error(error.message, { duration: 5000 });
+            await signOut({ redirect: false });
+            await removeToken();
+            toast.error(result.error, { duration: 5000 });
+        } else {
+            setIsPending(false);
+            router.refresh();
+            router.push("/dashboard");
         }
+
     }
 
 

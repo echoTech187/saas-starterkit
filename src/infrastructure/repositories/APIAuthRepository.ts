@@ -82,16 +82,9 @@ export class APIAuthRepository implements AuthRepository {
         const result = await response.json();
         return result.profile;
     }
-    async sendEmailCodeVerification(email: string): Promise<ApiResponse> {
-        const response = await fetch(process.env.BACKEND_PUBLIC_API_URL + '/send-email-code-verification', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email })
-        });
-        const result = await response.json();
-        return result;
+    async sendEmailCodeVerification(email: string, code: string): Promise<ApiResponse> {
+        const response: ApiResponse = await api.post('/send-email-code-verification', JSON.stringify({ email, code }));
+        return response;
     }
 
     async registerCompleted(id: string): Promise<ApiResponse> {

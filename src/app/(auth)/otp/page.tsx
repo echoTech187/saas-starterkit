@@ -12,17 +12,20 @@ import { resendCodeVerificationAction } from "@/app/_actions/authActions";
 import { toast } from "sonner";
 import { IUser } from "@/core/entities/IUser";
 import { authUseCase } from "@/di/modules";
+import { useSession } from "next-auth/react";
+import { User } from "next-auth";
 
 
 
-export default function OutorizationPage(user: IUser) {
+export default function OutorizationPage(user: User) {
     const form = useForm();
     const router = useRouter()
     const [isPending, setIsPending] = useState(false);
+    const { data: session } = useSession();
     const [value, setValue] = useState("");
     const [resend, setResend] = useState(false);
-    const [countdown, setCountdown] = useState(3);
-    const [isCounting, setIsCounting] = useState(false);
+    const [countdown, setCountdown] = useState(600);
+    const [isCounting, setIsCounting] = useState(true);
 
 
 
@@ -42,15 +45,17 @@ export default function OutorizationPage(user: IUser) {
         setCountdown(seconds);
         setIsCounting(true);
         setResend(true);
-        const resend = await resendCodeVerificationAction();
+
+        const targetUser = session?.user || user;
+        const email = targetUser?.email || "";
+        const code = (targetUser as unknown as IUser)?.code || "";
+
+        const resend = await resendCodeVerificationAction(email, String(code));
         if (resend.success) {
             toast.success(resend.message);
         } else {
             toast.error(resend.message);
         }
-        setIsCounting(false);
-        setCountdown(2 * (minutes * 60));
-        setResend(false);
     }
 
     const formatTime = (time: number) => {
@@ -58,27 +63,41 @@ export default function OutorizationPage(user: IUser) {
         const seconds = time % 60;
         return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     };
-
     async function onSubmit() {
         setIsPending(true);
-        console.log(value.length === 6 && value === user.code?.toString());
-        console.log(value);
-        console.log(user);
-        console.log(user.code);
 
-        if (value.length === 6 && value === user.code?.toString()) {
-            const result = await authUseCase.registerCompleted(user.slug);
-            setIsPending(false);
-            if (result.success) {
-                toast.success(result.message, { duration: 3000 });
-                router.replace('/login', { scroll: false });
+        if (session) {
+            // Type assertion to tell TypeScript that session.user.code exists
+            if (value.length === 6 && value === (session.user as unknown as IUser).code?.toString()) {
+                const result = await authUseCase.registerCompleted(session.user.slug);
+                setIsPending(false);
+                if (result.success) {
+                    toast.success(result.message, { duration: 3000 });
+                    router.replace('/login', { scroll: false });
+                } else {
+                    toast.error(result.message, { duration: 3000 });
+                }
             } else {
-                toast.error(result.message, { duration: 3000 });
+                setIsPending(false);
+                toast.error("Kode yang anda masukan salah", { duration: 5000 });
             }
-        } else {
-            setIsPending(false);
-            toast.error("Kode yang anda masukan salah", { duration: 5000 });
+        } else if (user) {
+
+            if (value.length === 6 && value === user.code?.toString()) {
+                const result = await authUseCase.registerCompleted(user.slug);
+                setIsPending(false);
+                if (result.success) {
+                    toast.success(result.message, { duration: 3000 });
+                    router.replace('/login', { scroll: false });
+                } else {
+                    toast.error(result.message, { duration: 3000 });
+                }
+            } else {
+                setIsPending(false);
+                toast.error("Kode yang anda masukan salah", { duration: 5000 });
+            }
         }
+
     }
     return user && (
         <div className="relative w-full min-h-screen bg-black  text-white overflow-hidden">

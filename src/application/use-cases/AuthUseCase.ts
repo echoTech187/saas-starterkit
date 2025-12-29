@@ -31,8 +31,8 @@ export class AuthUseCase {
         return result;
     }
 
-    async sendEmailCodeVerification(email: string): Promise<ApiResponse> {
-        const result = await this.authRepository.sendEmailCodeVerification(email);
+    async sendEmailCodeVerification(email: string, code: string): Promise<ApiResponse> {
+        const result = await this.authRepository.sendEmailCodeVerification(email, code);
         return result;
     }
     async registerCompleted(id: string): Promise<ApiResponse> {

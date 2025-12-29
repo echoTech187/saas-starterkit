@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server';
-import { userVerifyByToken } from './lib/session';
+import { getToken } from 'next-auth/jwt';
 
 interface LogData {
     path: string;
@@ -18,46 +18,29 @@ async function logToDatabase(_data: LogData) {
     // e.g., fetch('/api/log', { method: 'POST', body: JSON.stringify(data) });
 }
 
-export async function proxy(request: NextRequest) {
-    const token = request.cookies.get('token')?.value;
-    const { pathname } = request.nextUrl;
-
-    // Define auth and protected routes
-    const authRoutes = ['/login', '/register', '/forgot-password', '/otp'];
-    const protectedRoutes = ['/dashboard', '/onboarding', '/activity', '/billing', '/notifications', '/projects', '/settings', '/team'];
-
-    const isAuthRoute = authRoutes.some(route => pathname.startsWith(route));
-    const isProtectedRoute = protectedRoutes.some(route => pathname.startsWith(route));
-    const user = token ? await userVerifyByToken(token) : null;
-
-    // If user is logged in, redirect them from auth routes to the dashboard
-    if (isAuthRoute && user) {
-        return NextResponse.redirect(new URL('/dashboard', request.url));
-    }
-
-    // If user is not logged in, redirect them from protected routes to the login page
-    if (isProtectedRoute && !user) {
-        return NextResponse.redirect(new URL('/login', request.url));
-    }
-
-    const start = Date.now();
+export async function proxy(req: NextRequest) {
+    const session = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     const response = NextResponse.next();
-    const duration = Date.now() - start;
 
-    // Await this if you want logging to complete before the response is sent
-    // Note: This will increase latency.
-    logToDatabase({
-        path: pathname,
-        method: request.method,
-        latency: duration,
-        status: response.status,
-        userAgent: request.headers.get('user-agent'),
-        projectId: request.headers.get('x-project-id'), // Example: get project from header
-    });
+    // Jika user memiliki session (login) & memiliki accessToken
+    if (session?.accessToken) {
+        // Set cookie 'token' agar bisa dibaca oleh backend/aplikasi
+        response.cookies.set("token", session.accessToken as string, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax",
+            path: "/",
+        });
+    }
+
+    // Opsional: Redirect user yang sudah login dari /login ke /dashboard
+    if (req.nextUrl.pathname.startsWith("/login") && session) {
+        return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
 
     return response;
 }
 
 export const config = {
-    matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)'],
+    matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)', '/dashboard/:path*', '/api/:path*', '/login'],
 };

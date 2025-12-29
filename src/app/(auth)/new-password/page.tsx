@@ -10,14 +10,17 @@ import { useActionState, useEffect, useState } from "react";
 import { registerAction } from "@/app/_actions/authActions";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
-import { getCodeVerification } from "@/lib/utils/auth";
+import { registerSchema } from "@/lib/validations/register";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { IUser } from "@/core/entities/IUser";
 
-export default function RegisterPage() {
+export default function NewPasswordPage(data: IUser) {
     const router = useRouter()
     const [state, formAction, isPending] = useActionState(registerAction, null);
     const { data: session } = useSession();
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState<IUser | null>(data);
     const form = useForm({
+        resolver: zodResolver(registerSchema),
         defaultValues: {
             email: "",
             password: "",
@@ -33,20 +36,17 @@ export default function RegisterPage() {
                 toast.error(state?.message);
             }
             if (state?.success) {
-                toast.success("Selamat, akun Anda berhasil dibuat!", { duration: 3000, description: state?.message });
-                router.replace("/otp?token=" + session?.accessToken, { scroll: false });
+                // toast.success("Pendaftaran berhasil", { duration: 3000, description: state?.message });
+                router.replace("/otp", { scroll: false });
             }
         }
-
-        getCodeVerification().then((codeVerification) => {
-            if (codeVerification) {
-                setUser(codeVerification);
-                form.setValue("email", codeVerification.email);
-            } else {
-                setUser(null);
-                form.setValue("email", "");
+        function getUser() {
+            if (session?.user) {
+                setUser(session.user as unknown as IUser);
+                form.setValue("email", session.user.email);
             }
-        });
+        }
+        getUser();
     }, [session, state, formAction, router, form]);
 
     return user && (

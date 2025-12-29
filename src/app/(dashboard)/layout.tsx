@@ -3,20 +3,24 @@ import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/s
 import { AppSidebar } from "@/components/app-sidebar"
 import { Separator } from "@/components/ui/separator"
 import { DashboardBreadcrumb } from "@/components/ui/dashboard-breadcrumb"
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { getSession } from "next-auth/react";
 import { User } from "next-auth";
+import { useEffect, useState } from "react";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-    const { data: session } = useSession();
     const [user, setUser] = useState<User | null>(null);
 
+
     useEffect(() => {
-        async function verifyUser() {
+        async function getUser() {
+            const session = await getSession();
+            if (!session) {
+                window.location.href = '/login';
+            }
             setUser(session?.user as User);
         }
-        verifyUser()
-    }, [session]);
+        getUser();
+    }, []);
 
     return user ? (
         <SidebarProvider className="dark">

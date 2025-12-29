@@ -8,7 +8,7 @@ declare module "next-auth" {
      */
     interface Session {
         user: {
-            id: string;
+            id: number | string;
             email: string;
             username: string;
             fullname: string;
@@ -24,7 +24,7 @@ declare module "next-auth" {
      * or the Credentials provider's `authorize` callback.
      */
     interface User {
-        id: string;
+        id: number | string;
         email: string;
         username: string;
         fullname: string;
@@ -33,6 +33,8 @@ declare module "next-auth" {
         token?: string; // This is the access token from your backend
         refreshToken?: string;
         expiresAt?: number;
+        code?: string;
+        provider?: string;
     }
 }
 
@@ -46,7 +48,7 @@ declare module "next-auth/jwt" {
         refreshToken?: string;
         expiresAt?: number;
         user: {
-            id: string;
+            id: number | string;
             email: string;
             username: string;
             fullname: string;

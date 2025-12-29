@@ -12,6 +12,6 @@ export interface AuthRepository {
     logout(): Promise<void>;
     checkUserByEmail(email: string): Promise<{ exists: boolean }>;
     profile(token: string): Promise<IUser>;
-    sendEmailCodeVerification(email: string): Promise<ApiResponse>;
+    sendEmailCodeVerification(email: string, code: string): Promise<ApiResponse>;
 
 }

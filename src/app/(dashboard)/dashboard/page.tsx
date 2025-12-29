@@ -8,20 +8,24 @@ import {
     Zap, Users, ArrowUpRight,
     Server, Database, Globe
 } from "lucide-react";
+import { getSession } from "next-auth/react";
+import { User } from "next-auth";
 import { useEffect, useState } from "react";
-import { verifySession } from "@/lib/session";
-import { IUser } from "@/core/entities/IUser";
 
 export default function DashboardPage() {
-    const [user, setUser] = useState<IUser>();
+    const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
-        async function verifyUser() {
-            const user = await verifySession();
-            setUser(user);
+
+        async function getuser() {
+            const session = await getSession();
+            if (!session) {
+                window.location.href = '/login';
+            }
+            setUser(session?.user as User);
         }
-        verifyUser()
-    }, [])
+        getuser();
+    }, []);
     return (
         <div className="space-y-6">
 
@@ -29,7 +33,7 @@ export default function DashboardPage() {
             <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-linear-to-r from-cyan-900/40 to-blue-900/40 p-6 md:p-10 backdrop-blur-md">
                 <div className="relative z-10 flex max-lg:flex-col lg:flex-row justify-between items-start md:items-center gap-6">
                     <div>
-                        <h1 className="text-3xl font-bold text-white mb-2">Welcome back, {user?.username}! 👋</h1>
+                        <h1 className="text-3xl font-bold text-white mb-2">Welcome back, {user?.username || user?.name || user?.fullname}! 👋</h1>
                         <p className="text-zinc-300 max-w-xl">
                             Semua sistem berjalan normal. Project <span className="text-cyan-400 font-bold">Toko Online V2</span> sedang mengalami lonjakan traffic.
                         </p>

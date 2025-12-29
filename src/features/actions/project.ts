@@ -31,13 +31,13 @@ async function createProjectAction(prevState: ActionState, formData: FormData): 
     }
 
     // 3. Construct Final JSON Object (Sesuai Request)
-    const finalProjectData = {
-        ...validated.data,
-        status: "Building",
-        statusColor: "bg-amber-500",
-        lastDeploy: "Just now",
-        url: "-",
-    };
+    // const finalProjectData = {
+    //     ...validated.data,
+    //     status: "Building",
+    //     statusColor: "bg-amber-500",
+    //     lastDeploy: "Just now",
+    //     url: "-",
+    // };
 
     try {
         await new Promise((resolve) => setTimeout(resolve, 1500));
