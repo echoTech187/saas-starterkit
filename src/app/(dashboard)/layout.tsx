@@ -2,29 +2,13 @@
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Separator } from "@/components/ui/separator"
-import { DashboardBreadcrumb } from "@/components/ui/dashboard-breadcrumb"
-import { getSession } from "next-auth/react";
-import { User } from "next-auth";
-import { useEffect, useState } from "react";
+import { DashboardBreadcrumb } from "@/components/ui/dashboard-breadcrumb";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
 
-
-    useEffect(() => {
-        async function getUser() {
-            const session = await getSession();
-            if (!session) {
-                window.location.href = '/login';
-            }
-            setUser(session?.user as User);
-        }
-        getUser();
-    }, []);
-
-    return user ? (
+    return (
         <SidebarProvider className="dark">
-            <AppSidebar user={user} />
+            <AppSidebar />
             <SidebarInset className="bg-background  relative overflow-x-hidden min-h-screen">
                 <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(6,182,212,0.15),rgba(255,255,255,0))] pointer-events-none z-0" />
                 <header className="flex h-16 shrink-0 items-center gap-2 border-0 bg-background/5 backdrop-blur-xl px-4 sticky top-0 z-10 transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-16">
@@ -39,5 +23,5 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 </main>
             </SidebarInset>
         </SidebarProvider>
-    ) : null;
+    );
 }

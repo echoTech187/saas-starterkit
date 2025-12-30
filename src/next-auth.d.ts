@@ -14,9 +14,11 @@ declare module "next-auth" {
             fullname: string;
             slug: string;
             image: string;
+            isNewUser?: boolean;
         } & DefaultSession["user"];
         accessToken?: string;
         error?: "RefreshAccessTokenError";
+        isNewUser?: boolean;
     }
 
     /**
@@ -35,6 +37,7 @@ declare module "next-auth" {
         expiresAt?: number;
         code?: string;
         provider?: string;
+        isNewUser?: boolean;
     }
 }
 
@@ -47,6 +50,7 @@ declare module "next-auth/jwt" {
         accessToken?: string;
         refreshToken?: string;
         expiresAt?: number;
+        isNewUser?: boolean;
         user: {
             id: number | string;
             email: string;
@@ -54,6 +58,7 @@ declare module "next-auth/jwt" {
             fullname: string;
             slug: string;
             image: string;
+            isNewUser?: boolean;
         };
         error?: "RefreshAccessTokenError";
     }

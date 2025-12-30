@@ -48,9 +48,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import Image from "next/image";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "./ui/alert-dialog";
-import { removeToken } from "@/lib/utils/auth";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { User } from "next-auth";
+import { useEffect, useState } from "react";
+import { decodeToken } from "@/app/_actions/authActions";
 // Data Navigasi (Tetap)
 const data = {
     navMain: [
@@ -69,7 +70,7 @@ const initialTeams = [
     { id: "t2", name: "Nusantara Corp", plan: "Pro Plan", logo: "N" },
 ];
 
-export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sidebar> & { user: User }) {
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const router = useRouter();
     const pathname = usePathname();
     const { state } = useSidebar();
@@ -86,14 +87,37 @@ export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sideb
     // State untuk Popover agar bisa ditutup manual saat klik item
     const [isPopoverOpen, setIsPopoverOpen] = React.useState(false);
     const [isLogoutDialogOpen, setIsLogoutDialogOpen] = React.useState(false);
+    const { data: session, status } = useSession();
+    const [user, setUser] = useState<User | null>(null);
 
+    useEffect(() => {
+        async function getUser() {
+            if (status === "loading") return;
+            if (!session) {
+                await signOut({ callbackUrl: '/login' });
+                return;
+            }
+            if (session?.accessToken) {
+                try {
+                    const user = await decodeToken(session.accessToken as string);
+                    setUser(user);
+                } catch (error) {
+                    console.error("Failed to decode token", error);
+                }
+            } else {
+                console.warn("Session exists but accessToken is missing", session);
+            }
+        }
+        getUser();
+    }, [session, status]);
     // Fungsi Konfirmasi Logout
     const confirmLogout = async () => {
         setIsLogoutDialogOpen(false);
-        await removeToken();
-        await signOut();
+        await signOut({ callbackUrl: '/login' });
         toast.success("Logout berhasil. Sampai jumpa kembali!");
+        router.refresh();
         router.push("/login");
+
     };
     // Handler: Buat Tim Baru
     const handleCreateTeam = () => {
@@ -138,12 +162,10 @@ export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sideb
                         {/* LOGO */}
                         <SidebarMenuItem className="flex justify-center py-2">
                             {state === "collapsed" ? (
-                                <div className="h-10 w-10 flex items-center justify-center rounded-lg bg-linear-to-br from-cyan-500 to-blue-600 font-bold text-white shadow-lg shadow-cyan-500/20">
-                                    NS
-                                </div>
+                                <Image src="/src/logo/dark-mode-horizontal.png" width={400} height={200} alt="Logo" unoptimized loading="eager" className="w-8 h-auto" />
                             ) : (
                                 <div className="flex items-start gap-2 px-2 w-full h-full">
-                                    <Image src="/src/logo/dark-mode-horizontal.png" width={400} height={200} alt="Logo" unoptimized loading="eager" className="w-32 h-auto" />
+                                    <Image src="/src/logo/dark-mode-horizontal.png" width={400} height={200} alt="Logo" unoptimized loading="eager" className="w-12 h-auto" />
                                 </div>
                             )}
                         </SidebarMenuItem>
@@ -268,12 +290,12 @@ export function AppSidebar({ user, ...props }: React.ComponentProps<typeof Sideb
                                 className="data-[state=open]:bg-white/10 data-[state=open]:text-white hover:bg-white/5 hover:text-white text-zinc-400 cursor-pointer group"
                             >
                                 <Avatar className="h-8 w-8 rounded-lg border border-white/10">
-                                    <AvatarImage src={user.image} alt={user.username} />
+                                    <AvatarImage src={user?.image} alt={user?.username} />
                                     <AvatarFallback className="rounded-lg bg-zinc-800 text-zinc-400">CN</AvatarFallback>
                                 </Avatar>
                                 <div className="grid flex-1 text-left text-sm leading-tight ml-2">
-                                    <span className="truncate font-semibold text-white capitalize">{user.username || user.name || user.fullname}</span>
-                                    <span className="truncate text-xs">{user.email}</span>
+                                    <span className="truncate font-semibold text-white capitalize">{user?.username || user?.name || user?.fullname}</span>
+                                    <span className="truncate text-xs">{user?.email}</span>
                                 </div>
                                 <LogOut className="ml-auto size-4 group-hover:text-red-400 transition-colors" />
                             </SidebarMenuButton>

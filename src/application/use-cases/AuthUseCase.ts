@@ -31,12 +31,12 @@ export class AuthUseCase {
         return result;
     }
 
-    async sendEmailCodeVerification(email: string, code: string): Promise<ApiResponse> {
-        const result = await this.authRepository.sendEmailCodeVerification(email, code);
+    async sendEmailCodeVerification(email: string): Promise<ApiResponse> {
+        const result = await this.authRepository.sendEmailCodeVerification(email);
         return result;
     }
-    async registerCompleted(id: string): Promise<ApiResponse> {
-        const result = await this.authRepository.registerCompleted(id);
+    async registerCompleted(email: string, code: string): Promise<ApiResponse> {
+        const result = await this.authRepository.registerCompleted(email, code);
         return result;
     }
     async logout(): Promise<void> {

@@ -15,7 +15,6 @@ export default function ForgotPasswordPage() {
     const router = useRouter();
 
     async function onSubmit(data: FieldValues) {
-        console.log(data);
         router.push('/login')
     }
 

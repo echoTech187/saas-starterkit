@@ -6,19 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect } from "react";
 import { registerAction } from "@/app/_actions/authActions";
-import { toast } from "sonner";
-import { useSession } from "next-auth/react";
 import { registerSchema } from "@/lib/validations/register";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { IUser } from "@/core/entities/IUser";
+import { useSession } from "next-auth/react";
 
-export default function NewPasswordPage(data: IUser) {
+export default function NewPasswordPage() {
     const router = useRouter()
+    const { data: session, status } = useSession();
+    const email = session?.user.email;
     const [state, formAction, isPending] = useActionState(registerAction, null);
-    const { data: session } = useSession();
-    const [user, setUser] = useState<IUser | null>(data);
     const form = useForm({
         resolver: zodResolver(registerSchema),
         defaultValues: {
@@ -31,25 +29,20 @@ export default function NewPasswordPage(data: IUser) {
 
 
     useEffect(() => {
-        if (session?.accessToken) {
-            if (!state?.success) {
-                toast.error(state?.message);
-            }
-            if (state?.success) {
-                // toast.success("Pendaftaran berhasil", { duration: 3000, description: state?.message });
-                router.replace("/otp", { scroll: false });
-            }
+        if (state?.success) {
+            // toast.success("Pendaftaran berhasil", { duration: 3000, description: state?.message });
+            router.replace("/otp", { scroll: false });
         }
+
         function getUser() {
-            if (session?.user) {
-                setUser(session.user as unknown as IUser);
-                form.setValue("email", session.user.email);
+            if (email) {
+                form.setValue("email", email);
             }
         }
         getUser();
-    }, [session, state, formAction, router, form]);
+    }, [state, formAction, router, form, email]);
 
-    return user && (
+    return email && status !== "loading" && (
         <div className="relative w-full min-h-screen bg-black  text-white overflow-x-hidden">
             {/* <Image
                 src="/src/images/illustration/login.png"

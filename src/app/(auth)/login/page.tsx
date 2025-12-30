@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { FieldValues, useForm } from "react-hook-form";
@@ -8,13 +7,12 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Loader2 } from "lucide-react";
-import { signIn, signOut } from "next-auth/react";
+import { signIn } from "next-auth/react";
 import { Suspense, useState } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { removeToken } from "@/lib/utils/auth";
 import { loginSchema } from "@/lib/validations/auth";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 function LoginPageContent() {
     const router = useRouter();
@@ -31,26 +29,22 @@ function LoginPageContent() {
 
     async function signInWith(provider: string): Promise<void> {
         setIsPendingGoogle(true);
-        try {
-            await signIn(provider, {
-                callbackUrl: "/dashboard",
-                redirect: true,
-                pages: {
-                    signIn: "/login",
-                    error: "/login",
-                    signOut: "/login",
-                    newUser: "/register"
-                }
-            });
-            // Kode di bawah ini tidak akan jalan karena redirect: true
-        } catch (error: any) {
-            await signOut();
-            await removeToken();
 
-            toast.error(error.message, { duration: 5000 });
-            setIsPendingGoogle(false);
-            router.replace('/login', { scroll: false });
-        }
+        await signIn(provider, {
+            redirect: true,
+            callbackUrl: "/dashboard",
+            pages: {
+                signIn: "/login",
+                error: "/login",
+                signOut: "/login",
+                newUser: "/register"
+            }
+        });
+        setIsPendingGoogle(false);
+
+
+
+
 
     }
     async function onSubmit(values: FieldValues) {
@@ -64,13 +58,12 @@ function LoginPageContent() {
             password
         });
 
+        setIsPending(false);
+
         if (result?.error) {
-            setIsPending(false);
-            await signOut({ redirect: false });
-            await removeToken();
-            toast.error(result.error, { duration: 5000 });
+            toast.error(result.error);
         } else {
-            setIsPending(false);
+            toast.success("Login berhasil");
             router.refresh();
             router.push("/dashboard");
         }

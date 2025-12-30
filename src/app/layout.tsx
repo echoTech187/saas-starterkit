@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
-
+import NextTopLoader from 'nextjs-toploader';
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -30,6 +30,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <NextTopLoader
+          color="#06b6d4" // Sesuai dengan warna cyan-500 di tema Anda
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={3}
+          crawl={true}
+          showSpinner={false} // YouTube biasanya tidak menampilkan spinner
+          easing="ease"
+          speed={200}
+          shadow="0 0 10px #06b6d4,0 0 5px #06b6d4"
+        />
         <NextAuthProvider>
           {children}
         </NextAuthProvider>

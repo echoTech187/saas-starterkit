@@ -48,7 +48,6 @@ export function useOnboarding() {
         setIsLoading(true);
         // Simulasi Save ke Database
         setTimeout(() => {
-            console.log("Onboarding Complete:", formData);
             toast.success("Setup Selesai! Mengarahkan ke Dashboard...");
             setIsLoading(false);
             router.push("/dashboard"); // Redirect ke Dashboard

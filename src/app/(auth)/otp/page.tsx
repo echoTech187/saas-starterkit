@@ -1,32 +1,40 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { Form, FormField } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { REGEXP_ONLY_DIGITS } from "input-otp";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
-import { useEffect, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { resendCodeVerificationAction } from "@/app/_actions/authActions";
+import { resendCodeVerificationAction, verificationAction } from "@/app/_actions/authActions";
 import { toast } from "sonner";
-import { IUser } from "@/core/entities/IUser";
-import { authUseCase } from "@/di/modules";
+import { Input } from "@/components/ui/input";
 import { useSession } from "next-auth/react";
-import { User } from "next-auth";
 
 
 
-export default function OutorizationPage(user: User) {
-    const form = useForm();
-    const router = useRouter()
-    const [isPending, setIsPending] = useState(false);
-    const { data: session } = useSession();
+export default function OutorizationPage() {
+    const router = useRouter();
+    const { data: session, status } = useSession();
+    const email = session?.user.email;
+    const form = useForm(
+        {
+            defaultValues: {
+                email: email,
+                otp: "",
+            },
+        }
+    );
+
+    const [state, formAction, isPending] = useActionState(verificationAction, null);
+
     const [value, setValue] = useState("");
     const [resend, setResend] = useState(false);
     const [countdown, setCountdown] = useState(600);
+    const [totalDuration, setTotalDuration] = useState(600);
     const [isCounting, setIsCounting] = useState(true);
-
 
 
     useEffect(() => {
@@ -39,18 +47,27 @@ export default function OutorizationPage(user: User) {
         return () => clearInterval(interval);
     }, [isCounting, countdown]);
 
+    useEffect(() => {
+        if (state?.success) {
+            toast.success(state.message, {
+                description: state.description
+            });
+            router.push("/login");
+        }
+    }, [email, form, state, router]);
+
 
     async function startCountdown(minutes: number) {
         const seconds = minutes * 60;
         setCountdown(seconds);
+        setTotalDuration(seconds);
         setIsCounting(true);
         setResend(true);
 
-        const targetUser = session?.user || user;
-        const email = targetUser?.email || "";
-        const code = (targetUser as unknown as IUser)?.code || "";
-
-        const resend = await resendCodeVerificationAction(email, String(code));
+        if (!email) {
+            return;
+        }
+        const resend = await resendCodeVerificationAction(email);
         if (resend.success) {
             toast.success(resend.message);
         } else {
@@ -63,44 +80,19 @@ export default function OutorizationPage(user: User) {
         const seconds = time % 60;
         return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
     };
-    async function onSubmit() {
-        setIsPending(true);
 
-        if (session) {
-            // Type assertion to tell TypeScript that session.user.code exists
-            if (value.length === 6 && value === (session.user as unknown as IUser).code?.toString()) {
-                const result = await authUseCase.registerCompleted(session.user.slug);
-                setIsPending(false);
-                if (result.success) {
-                    toast.success(result.message, { duration: 3000 });
-                    router.replace('/login', { scroll: false });
-                } else {
-                    toast.error(result.message, { duration: 3000 });
-                }
-            } else {
-                setIsPending(false);
-                toast.error("Kode yang anda masukan salah", { duration: 5000 });
-            }
-        } else if (user) {
-
-            if (value.length === 6 && value === user.code?.toString()) {
-                const result = await authUseCase.registerCompleted(user.slug);
-                setIsPending(false);
-                if (result.success) {
-                    toast.success(result.message, { duration: 3000 });
-                    router.replace('/login', { scroll: false });
-                } else {
-                    toast.error(result.message, { duration: 3000 });
-                }
-            } else {
-                setIsPending(false);
-                toast.error("Kode yang anda masukan salah", { duration: 5000 });
-            }
-        }
-
-    }
-    return user && (
+    return email && status !== "loading" && (
         <div className="relative w-full min-h-screen bg-black  text-white overflow-hidden">
+            <style>{`
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
+                    20%, 40%, 60%, 80% { transform: translateX(4px); }
+                }
+                .animate-shake {
+                    animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+                }
+            `}</style>
             <Image
                 src="/src/images/illustration/login.png"
                 alt="Login Illustration"
@@ -123,25 +115,36 @@ export default function OutorizationPage(user: User) {
                         </div>
                         <h1 className="text-2xl font-bold text-white">Verifikasi OTP</h1>
                         <p className="text-zinc-400 mt-2 text-sm">
-                            Kami telah mengirimkan kode 6 digit ke email {user ? user.email : ''}. Masukkan di bawah ini.
+                            Kami telah mengirimkan kode 6 digit ke email {email}. Masukkan di bawah ini.
                         </p>
                     </div>
 
                     <Form {...form} >
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                        <form action={formAction} className="space-y-8">
                             <div className="flex justify-center">
+                                <FormField
+                                    control={form.control}
+                                    name="email"
+                                    render={({ field }) => (
+                                        <FormItem className="hidden">
+                                            <FormLabel className="text-zinc-300">Email</FormLabel>
+                                            <FormControl><Input defaultValue={email} type="email" readOnly {...field} /></FormControl>
+                                            <FormMessage className="text-red-400" />
+                                        </FormItem>
+                                    )} />
                                 <FormField
                                     control={form.control}
                                     name="otp"
                                     render={() => (
                                         <InputOTP
+                                            autoFocus
                                             name="otp"
                                             disabled={isPending}
                                             maxLength={6}
                                             value={value}
                                             onChange={(value) => setValue(value)}
                                             pattern={REGEXP_ONLY_DIGITS}
-                                            className="gap-2"
+                                            className={`gap-2`}
                                         >
                                             <InputOTPGroup className="gap-2">
                                                 {[0, 1, 2, 3, 4, 5].map((index) => (
@@ -183,9 +186,32 @@ export default function OutorizationPage(user: User) {
                     <div className="mt-6 text-sm text-zinc-500">
                         Tidak menerima kode?{" "}
                         {isCounting ? (
-                            <span className="text-white font-medium">
-                                Kirim ulang dalam {formatTime(countdown)}
-                            </span>
+                            <div className="inline-flex items-center gap-2 ml-1 align-middle">
+                                <div className="relative w-4 h-4">
+                                    <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                                        <path
+                                            className="text-zinc-700"
+                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="5"
+                                        />
+                                        <path
+                                            className="text-cyan-500 transition-all duration-1000 ease-linear"
+                                            strokeDasharray="100, 100"
+                                            strokeDashoffset={100 - (countdown / totalDuration) * 100}
+                                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            strokeWidth="5"
+                                            strokeLinecap="round"
+                                        />
+                                    </svg>
+                                </div>
+                                <span className="text-white font-medium tabular-nums">
+                                    {formatTime(countdown)}
+                                </span>
+                            </div>
                         ) : (
                             <div className="inline-flex gap-2">
                                 <Button variant="link" size="sm" disabled={isCounting || resend} onClick={() => startCountdown(10)} className="text-white hover:underline font-medium p-0">

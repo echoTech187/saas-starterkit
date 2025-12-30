@@ -8,24 +8,37 @@ import {
     Zap, Users, ArrowUpRight,
     Server, Database, Globe
 } from "lucide-react";
-import { getSession } from "next-auth/react";
+import { useSession } from "next-auth/react";
 import { User } from "next-auth";
 import { useEffect, useState } from "react";
+import { decodeToken } from "@/app/_actions/authActions";
 
 export default function DashboardPage() {
+    const { data: session, status } = useSession();
     const [user, setUser] = useState<User | null>(null);
 
     useEffect(() => {
-
-        async function getuser() {
-            const session = await getSession();
+        async function getUser() {
+            if (status === "loading") return;
+            
             if (!session) {
-                window.location.href = '/login';
+                // await signOut();
+                // window.location.href = '/login';
+                return;
             }
-            setUser(session?.user as User);
+            if (session?.accessToken) {
+                try {
+                    const user = await decodeToken(session.accessToken as string);
+                    setUser(user);
+                } catch (error) {
+                    console.error("Failed to decode token", error);
+                }
+            } else {
+                 console.warn("Session exists but accessToken is missing", session);
+            }
         }
-        getuser();
-    }, []);
+        getUser();
+    }, [session, status]);
     return (
         <div className="space-y-6">
 

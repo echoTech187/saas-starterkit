@@ -1,9 +1,9 @@
-import NextAuth, { User } from "next-auth"
+import NextAuth, { NextAuthOptions, User } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { authUseCase } from "@/di/modules"
 
-const handler = NextAuth({
+export const authOptions: NextAuthOptions = {
     providers: [
         CredentialsProvider({
             name: "Credentials",
@@ -23,7 +23,7 @@ const handler = NextAuth({
                         username: result.user?.username,
                         fullname: result.user?.fullname,
                         email: result.user?.email,
-                        token: result.token,
+                        token: result.token || result.accessToken,
                         image: result.user?.image
                     } as unknown as User;
                 }
@@ -45,7 +45,6 @@ const handler = NextAuth({
         error: "/login",
         newUser: "/register"
     },
-    secret: process.env.JWT_SECRET,
     callbacks: {
         signIn: async ({ user, account, profile }) => {
             if (account?.provider === "google") {
@@ -56,8 +55,9 @@ const handler = NextAuth({
                 if (userExist.exists) {
                     const result = await authUseCase.loginWithGoogle(user);
                     if (result.success) {
-                        user.token = result.token;
-                        return `/dashboard`;
+                        user.token = result.token || result.accessToken;
+                        user.isNewUser = false;
+                        return true;
                     }
                     return true;
                 } else {
@@ -67,20 +67,18 @@ const handler = NextAuth({
                         return false;
                     } else {
 
-                        user.token = result.token;
-                        user.code = result.user?.code;
-                        user.slug = result.user?.slug as string;
-                        user.image = result.user?.image as string;
-                        user.fullname = result.user?.fullname as string;
-                        user.email = result.user?.email as string;
-                        user.username = result.user?.username as string;
-                        user.id = result.user?.id as number;
-                        return result.success;
+                        user.token = result.token || result.accessToken;
+                        user.isNewUser = true;
+                        return true;
                     }
 
                 }
+            } else {
+                if (!user.token) return false;
+
+                user.token = user.token;
+                return true;
             }
-            return true;
         },
 
         async jwt({ token, user }) {
@@ -88,17 +86,20 @@ const handler = NextAuth({
                 token.user = user;
                 token.accessToken = user.token;
                 token.code = user.code;
+                token.isNewUser = user.isNewUser;
             }
             return token;
         },
         async session({ session, token }) {
             if (token) {
-                session.user = token.user as User;
                 session.accessToken = token.accessToken as string;
+                session.isNewUser = token.isNewUser;
             }
             return session;
         }
     }
-})
+}
+
+const handler = NextAuth(authOptions)
 
 export { handler as GET, handler as POST }

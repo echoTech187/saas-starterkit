@@ -8,10 +8,10 @@ export interface AuthRepository {
     loginWithGoogle(account: User | IUser): Promise<ApiResponse>;
     register(account: UserProps): Promise<ApiResponse>;
     registerWithGoogle(account: User): Promise<ApiResponse>;
-    registerCompleted(id: string): Promise<ApiResponse>;
+    registerCompleted(email: string, code: string): Promise<ApiResponse>;
     logout(): Promise<void>;
     checkUserByEmail(email: string): Promise<{ exists: boolean }>;
     profile(token: string): Promise<IUser>;
-    sendEmailCodeVerification(email: string, code: string): Promise<ApiResponse>;
+    sendEmailCodeVerification(email: string): Promise<ApiResponse>;
 
 }

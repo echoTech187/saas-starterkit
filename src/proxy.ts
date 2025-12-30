@@ -1,46 +1,25 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server';
-import { getToken } from 'next-auth/jwt';
+import { withAuth } from "next-auth/middleware"
+import { NextResponse } from "next/server"
 
-interface LogData {
-    path: string;
-    method: string;
-    latency: number;
-    status: number;
-    userAgent?: string | null;
-    projectId?: string | number | null;
-}
+export default withAuth(
+    function proxy(req) {
+        const token = req.nextauth.token;
+        const isNewUser = token?.isNewUser;
+        const path = req.nextUrl.pathname;
 
-// This function is not awaited, so it runs in the background
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-async function logToDatabase(_data: LogData) {
-    // Implement logging to an external service or database here
-    // e.g., fetch('/api/log', { method: 'POST', body: JSON.stringify(data) });
-}
-
-export async function proxy(req: NextRequest) {
-    const session = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-    const response = NextResponse.next();
-
-    // Jika user memiliki session (login) & memiliki accessToken
-    if (session?.accessToken) {
-        // Set cookie 'token' agar bisa dibaca oleh backend/aplikasi
-        response.cookies.set("token", session.accessToken as string, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax",
-            path: "/",
-        });
+        // If the user is new and not on the new-password page, redirect them
+        if (isNewUser && !path.startsWith("/new-password") && path.startsWith("/dashboard")) {
+            const url = req.nextUrl.clone();
+            url.pathname = "/new-password";
+            
+            return NextResponse.redirect(url);
+        }
+    },
+    {
+        callbacks: {
+            authorized: ({ token }) => !!token,
+        },
     }
+)
 
-    // Opsional: Redirect user yang sudah login dari /login ke /dashboard
-    if (req.nextUrl.pathname.startsWith("/login") && session) {
-        return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
-
-    return response;
-}
-
-export const config = {
-    matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)', '/dashboard/:path*', '/api/:path*', '/login'],
-};
+export const config = { matcher: ["/dashboard/:path*"] }
