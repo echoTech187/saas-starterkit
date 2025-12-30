@@ -2,6 +2,7 @@
 const nextConfig = {
   turbopack: {
     root: "/",
+    
     resolveAlias: {
       '~*': '*',
       underscore: 'lodash',
@@ -14,6 +15,7 @@ const nextConfig = {
     },
     resolveExtensions: ['.mdx', '.tsx', '.ts', '.jsx', '.js', '.json'],
   },
+  outputFileTracingRoot: "/",
   reactStrictMode: true,
   devIndicators: false
 };
