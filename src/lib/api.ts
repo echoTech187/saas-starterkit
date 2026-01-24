@@ -4,14 +4,9 @@ interface RequestOptions extends Omit<RequestInit, 'body'> {
     body?: unknown;
 }
 
-const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || process.env.BACKEND_PUBLIC_API_URL;
-
-if (!BASE_URL) {
-    throw new Error('NEXT_PUBLIC_BACKEND_API_URL is not defined in environment variables');
-}
-
-if (!BASE_URL.startsWith("http")) {
-    throw new Error(`NEXT_PUBLIC_BACKEND_API_URL must start with http:// or https://. Current value: ${BASE_URL}`);
+function getBaseUrl(): string {
+    const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || process.env.BACKEND_PUBLIC_API_URL;
+    return BASE_URL || '';
 }
 
 async function apiFetch<T>(
@@ -45,6 +40,17 @@ async function apiFetch<T>(
         }
     }
 
+    const BASE_URL = getBaseUrl();
+    
+    // Validate BASE_URL only when actually making a request (runtime)
+    if (!BASE_URL) {
+        throw new Error('NEXT_PUBLIC_BACKEND_API_URL is not defined in environment variables. Please configure it in EdgeOne Pages environment variables settings.');
+    }
+    
+    if (!BASE_URL.startsWith("http")) {
+        throw new Error(`NEXT_PUBLIC_BACKEND_API_URL must start with http:// or https://. Current value: ${BASE_URL}`);
+    }
+    
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
 
     if (!response.ok) {
