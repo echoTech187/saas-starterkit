@@ -2,7 +2,7 @@
 const nextConfig = {
   turbopack: {
     root: "/",
-    
+
     resolveAlias: {
       '~*': '*',
       underscore: 'lodash',
