@@ -18,7 +18,7 @@ try {
     envSchema.parse(process.env);
 } catch (error: unknown) {
     if (error instanceof z.ZodError) {
-        console.error('❌ Invalid environment variables:', error.flatten().fieldErrors);
+        console.error('❌ Invalid environment variables:', z.treeifyError(error));
     }
     throw new Error('Invalid environment variables');
 }

@@ -1,3 +1,5 @@
+export const runtime = 'nodejs';
+
 import NextAuth, { NextAuthOptions, User } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
@@ -57,7 +59,7 @@ export const authOptions: NextAuthOptions = {
                     if (result.success) {
                         user.token = result.token || result.accessToken;
                         user.isNewUser = false;
-                        return true;
+                        return true;
                     }
                     return true;
                 } else {
