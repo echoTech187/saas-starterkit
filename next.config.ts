@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   turbopack: {
-    root: "/",
+    root: process.cwd(),
 
     resolveAlias: {
       '~*': '*',
@@ -15,7 +15,7 @@ const nextConfig = {
     },
     resolveExtensions: ['.mdx', '.tsx', '.ts', '.jsx', '.js', '.json'],
   },
-  outputFileTracingRoot: "/",
+  outputFileTracingRoot: process.cwd(),
   reactStrictMode: true,
   devIndicators: false
 };
