@@ -1,9 +1,11 @@
 import path from 'path';
 import fs from 'fs';
+import { webpack } from 'next/dist/compiled/webpack/webpack';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   turbopack: {
+    root: "/",
     resolveAlias: {
       '~*': '*',
       underscore: 'lodash',
@@ -16,7 +18,7 @@ const nextConfig = {
     },
     resolveExtensions: ['.mdx', '.tsx', '.ts', '.jsx', '.js', '.json'],
   },
-  webpack: (config: any) => {
+  webpack: (config: webpack.Configuration) => {
     // Dynamically find the project root by searching for package.json
     let currentDir = process.cwd();
     let projectRoot = currentDir;
