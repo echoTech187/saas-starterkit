@@ -58,6 +58,8 @@ export function TechStackSection() {
                             alt="Core Engine"
                             width={500}
                             height={500}
+                            unoptimized
+                            loading="eager"
                             className="relative z-10 w-full h-auto mix-blend-mode-screen object-contain"
                         />
                     </motion.div>
