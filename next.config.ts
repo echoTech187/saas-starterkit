@@ -30,9 +30,10 @@ const nextConfig = {
       currentDir = path.dirname(currentDir);
     }
 
+    config.resolve = config.resolve || {};
     config.resolve.modules = [
+      ...(config.resolve.modules || []),
       path.resolve(projectRoot, 'node_modules'),
-      'node_modules',
     ];
     return config;
   },
