@@ -25,7 +25,7 @@ export default function NavbarSection() {
         const element = document.querySelector(id);
         if (element) {
             element.scrollIntoView({ behavior: 'smooth' });
-            // e.preventDefault();
+            e.preventDefault();
         }
 
     };
