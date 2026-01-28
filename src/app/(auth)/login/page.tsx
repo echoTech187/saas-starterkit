@@ -193,7 +193,7 @@ function LoginPageContent() {
                         <div className="relative w-full h-full mx-auto mb-8 animate-in fade-in zoom-in duration-700">
                             <div className="absolute inset-0 bg-cyan-500/20 blur-[80px] rounded-full opacity-40 animate-pulse" />
                             <Image
-                                src="/images/illustration/1.png"
+                                src="/src/images/illustration/1.png"
                                 alt="Login Illustration"
                                 width={600}
                                 height={600}

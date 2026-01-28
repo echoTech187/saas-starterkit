@@ -94,7 +94,7 @@ export default function OutorizationPage() {
                 }
             `}</style>
             <Image
-                src="/images/illustration/login.png"
+                src="/src/images/illustration/login.png"
                 alt="Login Illustration"
                 width={16000}
                 height={9000}
