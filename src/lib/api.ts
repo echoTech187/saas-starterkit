@@ -1,4 +1,5 @@
 // src/lib/api.ts
+
 interface RequestOptions extends Omit<RequestInit, 'body'> {
     token?: string;
     body?: unknown;
@@ -41,16 +42,16 @@ async function apiFetch<T>(
     }
 
     const BASE_URL = getBaseUrl();
-    
+
     // Validate BASE_URL only when actually making a request (runtime)
     if (!BASE_URL) {
         throw new Error('NEXT_PUBLIC_BACKEND_API_URL is not defined in environment variables. Please configure it in EdgeOne Pages environment variables settings.');
     }
-    
+
     if (!BASE_URL.startsWith("http")) {
         throw new Error(`NEXT_PUBLIC_BACKEND_API_URL must start with http:// or https://. Current value: ${BASE_URL}`);
     }
-    
+    console.log(`${BASE_URL}${endpoint}`);
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
 
     if (!response.ok) {
@@ -62,7 +63,7 @@ async function apiFetch<T>(
             // If response is not JSON, use default message
             errorMessage = response.statusText || errorMessage;
         }
-        throw new Error(errorMessage);
+        return errorMessage as unknown as T;
     }
 
     // Handle cases where the response might not have a body (e.g., 204 No Content)

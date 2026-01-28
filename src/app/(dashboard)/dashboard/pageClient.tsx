@@ -8,17 +8,13 @@ import {
     Zap, Users, ArrowUpRight,
     Server, Database, Globe
 } from "lucide-react";
-import { signOut } from "next-auth/react";
 import { IUser } from "@/core/entities/IUser";
 
 export default function DashboardClientPage(user: {
     user: IUser
 }) {
     const users = user.user;
-    if (!user) {
-        signOut();
-        return null;
-    };
+
     return (
         <div className="space-y-6">
 
