@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server";
 import { authUseCase } from "@/di/modules";
 import { loginSchema } from "@/lib/validations/auth";
 import { IUser } from "@/core/entities/IUser";
 
-export async function signinAction(prevState: any, formData: FormData) {
+export async function signinAction(prevState: unknown, formData: FormData) {
     const username = formData.get("username") as string;
     const password = formData.get("password") as string;
 
@@ -36,17 +35,25 @@ export async function signinAction(prevState: any, formData: FormData) {
 
         }
 
-    } catch (error: any) {
-        console.error("❌ [LOGIN ERROR] Detail Error:", error);
-        return {
-            success: false,
-            message: error.message || "Login gagal. Mohon cek kembali input Anda.",
-            errors: { username: ["Login gagal. Mohon cek kembali input Anda."], password: ["Login gagal. Mohon cek kembali input Anda."] },
-        };
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return {
+                success: false,
+                message: "❌ [LOGIN ERROR]",
+                description: error.message,
+                errors: error.message
+            }
+        } else {
+            return {
+                success: false,
+                message: error || "Login gagal. Mohon cek kembali input Anda.",
+                errors: { username: ["Login gagal. Mohon cek kembali input Anda."], password: ["Login gagal. Mohon cek kembali input Anda."] },
+            }
+        }
     }
 
 }
-export async function registerAction(prevState: any, formData: FormData) {
+export async function registerAction(prevState: unknown, formData: FormData) {
 
     try {
         const result = await authUseCase.register({
@@ -68,12 +75,22 @@ export async function registerAction(prevState: any, formData: FormData) {
                 errors: result.errors,
             };
         }
-    } catch (error: any) {
-        console.error("❌ [REGISTER ERROR] Detail Error:", error);
-        return {
-            success: false,
-            message: "Terjadi kesalahan pada server. Silahkan coba lagi.",
-        };
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return {
+                success: false,
+                message: "❌ [LOGIN ERROR]",
+                description: error.message,
+                errors: error.message
+            }
+        } else {
+            return {
+                success: false,
+                message: "❌ [LOGIN ERROR]",
+                description: error || "Terjadi kesalahan pada server. Silahkan coba lagi.",
+                errors: { username: ["Login gagal. Mohon cek kembali input Anda."], password: ["Login gagal. Mohon cek kembali input Anda."] },
+            }
+        }
     }
 }
 
@@ -103,7 +120,7 @@ export async function resendCodeVerificationAction(email: string) {
         };
     }
 }
-export async function verificationAction(prevState: any, formData: FormData) {
+export async function verificationAction(prevState: unknown, formData: FormData) {
     const code = formData.get("otp") as string;
     const email = formData.get("email") as string;
     if (!email || !code) {
@@ -130,12 +147,22 @@ export async function verificationAction(prevState: any, formData: FormData) {
                 provider: "credentials"
             };
         }
-    } catch (error: any) {
-        return {
-            success: false,
-            message: error.message || "Verifikasi gagal. Mohon cek kembali input Anda 3.",
-            errors: { code: ["Verifikasi gagal. Mohon cek kembali input Anda."] },
-        };
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            return {
+                success: false,
+                message: "❌ [LOGIN ERROR]",
+                description: error.message,
+                errors: error.message
+            }
+        } else {
+            return {
+                success: false,
+                message: "❌ [LOGIN ERROR]",
+                description: error || "Verifikasi gagal. Mohon cek kembali input Anda.",
+                errors: { code: ["Verifikasi gagal. Mohon cek kembali input Anda."] },
+            }
+        }
     }
 }
 

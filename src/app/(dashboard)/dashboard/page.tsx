@@ -8,7 +8,7 @@ import {
     Zap, Users, ArrowUpRight,
     Server, Database, Globe
 } from "lucide-react";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { User } from "next-auth";
 import { useEffect, useState } from "react";
 import { decodeToken } from "@/app/_actions/authActions";
@@ -20,10 +20,10 @@ export default function DashboardPage() {
     useEffect(() => {
         async function getUser() {
             if (status === "loading") return;
-            
+
             if (!session) {
-                // await signOut();
-                // window.location.href = '/login';
+                await signOut();
+                window.location.href = '/login';
                 return;
             }
             if (session?.accessToken) {
@@ -34,7 +34,7 @@ export default function DashboardPage() {
                     console.error("Failed to decode token", error);
                 }
             } else {
-                 console.warn("Session exists but accessToken is missing", session);
+                console.warn("Session exists but accessToken is missing", session);
             }
         }
         getUser();
