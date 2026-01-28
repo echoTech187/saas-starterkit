@@ -49,8 +49,8 @@ export default function OutorizationPage() {
 
     useEffect(() => {
         if (state?.success) {
-            toast.success(state.message, {
-                description: state.description
+            toast.success(state.message as string, {
+                description: state.description as string
             });
             router.push("/login");
         }
