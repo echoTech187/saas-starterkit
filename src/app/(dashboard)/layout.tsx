@@ -1,11 +1,18 @@
-"use client";
+"use server";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Separator } from "@/components/ui/separator"
 import { DashboardBreadcrumb } from "@/components/ui/dashboard-breadcrumb";
+import { cookies } from "next/headers";
+import { permanentRedirect } from "next/navigation";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-
+export default async function Layout({ children }: { children: React.ReactNode }) {
+    const storeToken = (await cookies());
+    const token = storeToken.get("next-auth.session-token")?.value;
+    if (!token) {
+        // signOut();
+        permanentRedirect("/login");
+    }
     return (
         <SidebarProvider className="dark">
             <AppSidebar />
