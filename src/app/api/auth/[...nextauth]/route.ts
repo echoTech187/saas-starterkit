@@ -59,7 +59,8 @@ export const authOptions: NextAuthOptions = {
                     if (result.success) {
                         user.token = result.token || result.accessToken;
                         user.isNewUser = false;
-                        return true;
+                        return true;
+
                     }
                     return true;
                 } else {
