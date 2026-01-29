@@ -13,7 +13,7 @@ import { IUser } from "@/core/entities/IUser";
 export default function DashboardClientPage(user: {
     user: IUser
 }) {
-    const users = user.user;
+    const users = user.user
 
     return (
         <div className="space-y-6">

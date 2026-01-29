@@ -1,24 +1,21 @@
-import { NextRequest, NextResponse } from "next/server"
+import { withAuth } from "next-auth/middleware"
+import { NextResponse } from "next/server"
 
-export default async function proxy(req: NextRequest) {
-    const { pathname } = req.nextUrl
+export default function proxy(req) {
+        const token = req.nextauth.token;
+        const isNewUser = token?.isNewUser;
+        const path = req.nextUrl.pathname;
 
-    if (config.matcher.some((prefix) => pathname.startsWith(prefix))) {
-        return NextResponse.redirect(new URL("/login", req.url))
+        // If the user is new and not on the new-password page, redirect them
+        if (isNewUser && !path.startsWith("/new-password") && path.startsWith("/dashboard")) {
+            const url = req.nextUrl.clone();
+            url.pathname = "/new-password";
+
+            return NextResponse.redirect(url);
+        }
     }
-
-    return NextResponse.next()
-
-}
+)
 
 export const config = {
-    matcher: [
-        "/dashboard/:path*",
-        "/activity/:path*",
-        "/settings/:path*",
-        "/projects/:path*",
-        "/team/:path*",
-        "/billing/:path*",
-        "/notifications/:path*"
-    ]
-}
+    matcher: ["/dashboard/:path*", "/api/:path*"],
+};
