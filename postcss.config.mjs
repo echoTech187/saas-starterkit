@@ -1,7 +1,6 @@
 const config = {
   plugins: {
-    "@tailwindcss/postcss": { config: require.resolve('tailwindcss/package.json').replace(/(\\|\/)package\.json$/, '') },
+    "@tailwindcss/postcss": {},
   },
 };
-
 export default config;

@@ -15,7 +15,7 @@ import { useSession } from "next-auth/react";
 export default function NewPasswordPage() {
     const router = useRouter()
     const { data: session, status } = useSession();
-    const email = session?.user.email;
+    const email = session?.user?.email;
     const [state, formAction, isPending] = useActionState(registerAction, null);
     const form = useForm({
         resolver: zodResolver(registerSchema),
