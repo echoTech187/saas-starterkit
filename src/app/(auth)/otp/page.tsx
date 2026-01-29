@@ -18,7 +18,8 @@ import { useSession } from "next-auth/react";
 export default function OutorizationPage() {
     const router = useRouter();
     const { data: session, status } = useSession();
-    const email = session?.user.email;
+    console.log(session);
+    const email = session?.user?.email || "";
     const form = useForm(
         {
             defaultValues: {
@@ -128,7 +129,7 @@ export default function OutorizationPage() {
                                     render={({ field }) => (
                                         <FormItem className="hidden">
                                             <FormLabel className="text-zinc-300">Email</FormLabel>
-                                            <FormControl><Input defaultValue={email} type="email" readOnly {...field} /></FormControl>
+                                            <FormControl><Input type="email" readOnly {...field} value={field.value ?? ""} /></FormControl>
                                             <FormMessage className="text-red-400" />
                                         </FormItem>
                                     )} />
