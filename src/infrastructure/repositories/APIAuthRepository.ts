@@ -64,7 +64,6 @@ export class APIAuthRepository implements AuthRepository {
                 'Content-Type': 'application/json',
             },
         });
-        console.log(response);
         return response.profile;
     }
     async sendEmailCodeVerification(email: string): Promise<ApiResponse> {
