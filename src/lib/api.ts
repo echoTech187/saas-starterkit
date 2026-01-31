@@ -51,8 +51,9 @@ async function apiFetch<T>(
     if (!BASE_URL.startsWith("http")) {
         throw new Error(`NEXT_PUBLIC_BACKEND_API_URL must start with http:// or https://. Current value: ${BASE_URL}`);
     }
+    console.log(`${BASE_URL}${endpoint}`, config);
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
-
+    console.log(await response.json());
     if (!response.ok) {
         let errorMessage = `HTTP error! status: ${response.status}`;
         try {

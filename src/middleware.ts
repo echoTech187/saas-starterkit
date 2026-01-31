@@ -7,16 +7,17 @@ export default withAuth(
         const isNewUser = token?.isNewUser;
         const path = req.nextUrl.pathname;
 
-        // If the user is new and not on the new-password page, redirect them
-        if (isNewUser && !path.startsWith("/new-password") && path.startsWith("/dashboard")) {
-            if (req.method === 'POST') {
-                return;
-            }
+        if (!token) {
+            return NextResponse.redirect(new URL("/login", req.url));
+        }
+        if (isNewUser) {
             const url = req.nextUrl.clone();
             url.pathname = "/new-password";
 
             return NextResponse.redirect(url);
         }
+
+        return NextResponse.next();
     },
     {
         callbacks: {
