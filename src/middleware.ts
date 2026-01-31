@@ -9,6 +9,9 @@ export default withAuth(
 
         // If the user is new and not on the new-password page, redirect them
         if (isNewUser && !path.startsWith("/new-password") && path.startsWith("/dashboard")) {
+            if (req.method === 'POST') {
+                return;
+            }
             const url = req.nextUrl.clone();
             url.pathname = "/new-password";
 
