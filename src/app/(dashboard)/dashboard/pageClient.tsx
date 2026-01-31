@@ -8,12 +8,12 @@ import {
     Zap, Users, ArrowUpRight,
     Server, Database, Globe
 } from "lucide-react";
-import { IUser } from "@/core/entities/IUser";
+import { useSession } from "next-auth/react";
 
-export default function DashboardClientPage(user: {
-    user: IUser
-}) {
-    const users = user.user
+export default function DashboardClientPage() {
+    const { data: session, status } = useSession();
+    if (status === "loading") return <div>Loading...</div>;
+    const users = session?.user;
 
     return (
         <div className="space-y-6">
