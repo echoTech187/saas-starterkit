@@ -61,6 +61,7 @@ export async function registerAction(prevState: unknown, formData: FormData) {
             password: formData.get("password") as string,
             confirmPassword: formData.get("confirm_password") as string,
         });
+        console.log(result);
         if (result.success) {
             return {
                 success: true,

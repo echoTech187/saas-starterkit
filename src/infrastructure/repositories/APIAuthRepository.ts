@@ -25,6 +25,7 @@ export class APIAuthRepository implements AuthRepository {
         }
 
         const response: ApiResponse = await api.post('/register', account);
+        console.log(response);
         return response;
     }
 
