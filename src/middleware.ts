@@ -7,30 +7,33 @@ export default withAuth(
         const isNewUser = token?.isNewUser;
         const path = req.nextUrl.pathname;
 
-        if (!token) {
-            return NextResponse.redirect(new URL("/login", req.url));
+        // 1. Handle Login Route
+        if (path === "/login") {
+            // Jika user sudah login, jangan biarkan masuk ke halaman login lagi, lempar ke dashboard
+            if (token && !isNewUser) {
+                return NextResponse.redirect(new URL("/dashboard", req.url));
+            }
+            // Jika belum login, biarkan akses ke halaman login
+            return NextResponse.next();
         }
 
+        // 2. Handle New User
         if (isNewUser) {
-            const url = req.nextUrl.clone();
-            url.pathname = "/new-password";
-
-            return NextResponse.redirect(url);
+            return NextResponse.redirect(new URL("/new-password", req.url));
         }
-        if (path === "/dashboard" && token?.accessToken !== null && !isNewUser) {
-            return NextResponse.rewrite(new URL("/dashboard", req.url));
-        }
-
-        if (path === "/login" && token?.accessToken !== null && !isNewUser) {
-            return NextResponse.redirect(new URL("/dashboard", req.url));
-        }
-
 
         return NextResponse.next();
     },
     {
         callbacks: {
-            authorized: ({ token }) => !!token,
+            authorized: ({ token, req }) => {
+                // Izinkan akses ke /login tanpa token agar middleware bisa berjalan
+                if (req.nextUrl.pathname === "/login") {
+                    return true;
+                }
+                // Untuk rute lain (dashboard), wajib ada token
+                return !!token;
+            },
         },
     }
 )
