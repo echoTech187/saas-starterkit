@@ -170,5 +170,7 @@ export async function verificationAction(prevState: unknown, formData: FormData)
 
 export async function decodeToken(token: string): Promise<IUser> {
     const response = await authUseCase.executeUserProfile(token);
+    console.log('response decodeToken', response);
+
     return response;
 }

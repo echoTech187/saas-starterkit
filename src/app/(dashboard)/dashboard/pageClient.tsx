@@ -9,21 +9,36 @@ import {
     Server, Database, Globe
 } from "lucide-react";
 import { useSession } from "next-auth/react";
-import { IUser } from "@/core/entities/IUser";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
+import { decodeToken } from "@/app/_actions/authActions";
+import { IUser } from "@/core/entities/IUser";
 
 export default function DashboardClientPage() {
     const { data: session, status } = useSession();
-    const [user] = useState<IUser>(session?.user as unknown as IUser || undefined);
-    if (status === "loading") return <div>Loading...</div>;
+    const [user, setUser] = useState<IUser | undefined>(undefined);
+    useEffect(() => {
 
-    if (!session?.accessToken) {
-        redirect('/login');
-    }
+        async function getUser() {
+            if (status === "loading") return;
+            if (!session) {
+                redirect('/login');
+            }
+            if (!session?.user) {
+                redirect('/login');
+            }
+            if (!session?.accessToken) {
+                redirect('/login');
+            }
+            const users = await decodeToken(session.accessToken as string);
+            console.log('users response', users);
+            setUser(users);
+        }
+        getUser();
+    }, [session, status]);
 
 
-    const users = user;
+    console.log('users', user);
 
     return (
         <div className="space-y-6">
@@ -32,7 +47,7 @@ export default function DashboardClientPage() {
             <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-linear-to-r from-cyan-900/40 to-blue-900/40 p-6 md:p-10 backdrop-blur-md">
                 <div className="relative z-10 flex max-lg:flex-col lg:flex-row justify-between items-start md:items-center gap-6">
                     <div>
-                        <h1 className="text-3xl font-bold text-white mb-2">Welcome back, {users?.username || users?.fullname}! 👋</h1>
+                        <h1 className="text-3xl font-bold text-white mb-2">Welcome back, {user?.username || user?.fullname}! 👋</h1>
                         <p className="text-zinc-300 max-w-xl">
                             Semua sistem berjalan normal. Project <span className="text-cyan-400 font-bold">Toko Online V2</span> sedang mengalami lonjakan traffic.
                         </p>
@@ -226,7 +241,7 @@ export default function DashboardClientPage() {
                                 {[1, 2, 3].map((i) => (
                                     <div key={i} className="flex items-start gap-3 group">
                                         <Avatar className="h-8 w-8 border border-white/10 group-hover:border-cyan-500/50 transition-colors">
-                                            <AvatarImage src={`/avatars/${i}.png`} />
+                                            {/* <AvatarImage loading="eager" src={`/avatars/${i}.png`} /> */}
                                             <AvatarFallback className="text-xs bg-zinc-800 text-zinc-400">U{i}</AvatarFallback>
                                         </Avatar>
                                         <div>
