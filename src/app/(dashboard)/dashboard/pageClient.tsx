@@ -11,16 +11,19 @@ import {
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { redirect } from "next/navigation";
-import { decodeToken } from "@/app/_actions/authActions";
 import { IUser } from "@/core/entities/IUser";
+import { decodeToken } from "@/app/_actions/authActions";
 
 export default function DashboardClientPage() {
     const { data: session, status } = useSession();
+    console.log(session)
     const [user, setUser] = useState<IUser | undefined>(undefined);
     useEffect(() => {
 
         async function getUser() {
-            if (status === "loading") return;
+            if (status === "loading") {
+                return (<h1>Loading...</h1>);
+            }
             if (!session) {
                 redirect('/login');
             }
@@ -30,14 +33,14 @@ export default function DashboardClientPage() {
             if (!session?.accessToken) {
                 redirect('/login');
             }
-            const users = await decodeToken(session.accessToken as string);
+            const users = await decodeToken(session?.accessToken as string);
             console.log('users response', users);
             setUser(users);
         }
         getUser();
     }, [session, status]);
 
-
+    if (!user) return;
     console.log('users', user);
 
     return (

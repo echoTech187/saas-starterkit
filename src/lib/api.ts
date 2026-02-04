@@ -53,24 +53,37 @@ async function apiFetch<T>(
     }
     console.log(`${BASE_URL}${endpoint}`, config);
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
-    console.log(response.ok, response.status, response.statusText, response.body);
-    if (!response.ok) {
-        let errorMessage = `HTTP error! status: ${response.status}`;
-        try {
-            const errorData = await response.json();
-            errorMessage = errorData.message || errorMessage;
-        } catch {
-            errorMessage = response.statusText || errorMessage;
-        }
-        return errorMessage as unknown as T;
-    }
 
     // Handle cases where the response might not have a body (e.g., 204 No Content)
     if (response.status === 204) {
         return null as T;
     }
 
-    return await response.json();
+    const responseText = await response.text();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let responseJson: any;
+
+    try {
+        responseJson = JSON.parse(responseText);
+    } catch (error : unknown) {
+        console.error("Non-JSON API Response:", responseText);
+        // Ignore JSON parse error
+    }
+
+    console.log(response.ok, response.status, response.statusText, responseJson || responseText);
+
+    if (!response.ok) {
+        let errorMessage = `HTTP error! status: ${response.status}`;
+        if (responseJson && responseJson.message) {
+            errorMessage = responseJson.message;
+        } else {
+            console.error("Non-JSON API Error Response:", responseText);
+            errorMessage = response.statusText || errorMessage;
+        }
+        return errorMessage as unknown as T;
+    }
+
+    return responseJson as T;
 }
 
 export const api = {
