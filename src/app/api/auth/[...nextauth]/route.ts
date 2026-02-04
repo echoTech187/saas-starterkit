@@ -1,4 +1,3 @@
-export const runtime = 'nodejs';
 
 import NextAuth, { NextAuthOptions, User } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
@@ -106,4 +105,4 @@ export const authOptions: NextAuthOptions = {
 
 const handler = NextAuth(authOptions)
 
-export { handler as GET, handler as POST }
+export { handler as GET, handler as POST, handler as DELETE, handler as PUT, handler as PATCH }
