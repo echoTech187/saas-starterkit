@@ -1,4 +1,4 @@
-// src/lib/api.ts
+import { cookies } from 'next/headers'
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
     token?: string;
@@ -6,7 +6,7 @@ interface RequestOptions extends Omit<RequestInit, 'body'> {
 }
 
 function getBaseUrl(): string {
-    const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || process.env.BACKEND_PUBLIC_API_URL;
+    const BASE_URL = process.env.BACKEND_PUBLIC_API_URL;
     return BASE_URL || '';
 }
 
@@ -42,18 +42,11 @@ async function apiFetch<T>(
     }
 
     const BASE_URL = getBaseUrl();
-
-    // Validate BASE_URL only when actually making a request (runtime)
-    if (!BASE_URL) {
-        throw new Error('NEXT_PUBLIC_BACKEND_API_URL is not defined in environment variables. Please configure it in EdgeOne Pages environment variables settings.');
-    }
-
-    if (!BASE_URL.startsWith("http")) {
-        throw new Error(`NEXT_PUBLIC_BACKEND_API_URL must start with http:// or https://. Current value: ${BASE_URL}`);
-    }
+    const storeCokies = await cookies();
+    console.log('storeCokies', storeCokies.getAll());
     console.log(`${BASE_URL}${endpoint}`, config);
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
-    console.log(response.ok, response.status, response.statusText, response.body);
+    console.log(response.ok, response.status, response.statusText);
     if (!response.ok) {
         let errorMessage = `HTTP error! status: ${response.status}`;
         try {
@@ -62,12 +55,12 @@ async function apiFetch<T>(
         } catch {
             errorMessage = response.statusText || errorMessage;
         }
-        throw new Error(errorMessage);
+        return errorMessage as unknown as T;
     }
 
     // Handle cases where the response might not have a body (e.g., 204 No Content)
     if (response.status === 204) {
-        throw new Error('No content');
+        return null as T;
     }
 
     return await response.json();
