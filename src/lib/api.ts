@@ -1,4 +1,5 @@
 // src/lib/api.ts
+import * as Sentry from "@sentry/nextjs";
 
 export class ApiError extends Error {
     constructor(
@@ -98,7 +99,23 @@ async function apiFetch<T>(
             console.warn("⚠️ Unauthorized: Token expired or invalid.");
         }
 
-        throw new ApiError(errorMessage, response.status, responseJson);
+        // Deteksi Error XML S3/EdgeOne (Indikasi Salah URL Backend)
+        if (response.status === 405 && responseText.includes("MethodNotAllowed")) {
+            errorMessage = `🚨 MISCONFIGURATION: API URL points to Storage/Frontend instead of Backend. Check NEXT_PUBLIC_BACKEND_API_URL. Target: ${BASE_URL}`;
+        }
+
+        const errorObj = new ApiError(errorMessage, response.status, responseJson);
+
+        // Sentry Integration: Capture error sebelum di-throw
+        Sentry.withScope((scope) => {
+            scope.setTag("api_method", config.method?.toString() || "GET");
+            scope.setTag("api_endpoint", endpoint);
+            scope.setTag("http_status", response.status);
+            scope.setExtra("response_body", responseJson || responseText);
+            Sentry.captureException(errorObj);
+        });
+
+        throw errorObj;
     }
 
     return responseJson as T;
