@@ -10,6 +10,9 @@ export default withAuth(
         if (!token) {
             return NextResponse.redirect(new URL("/login", req.url));
         }
+        if (path === "/dashboard" && token?.accessToken !== null && !isNewUser) {
+            return NextResponse.next();
+        }
         if (isNewUser) {
             const url = req.nextUrl.clone();
             url.pathname = "/new-password";
@@ -17,7 +20,7 @@ export default withAuth(
             return NextResponse.redirect(url);
         }
 
-        return NextResponse.redirect(new URL(path, req.url));
+        return NextResponse.next();
     },
     {
         callbacks: {
