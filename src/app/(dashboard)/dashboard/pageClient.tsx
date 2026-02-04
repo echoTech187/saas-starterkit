@@ -9,12 +9,21 @@ import {
     Server, Database, Globe
 } from "lucide-react";
 import { useSession } from "next-auth/react";
+import { IUser } from "@/core/entities/IUser";
+import { useState } from "react";
+import { redirect } from "next/navigation";
 
 export default function DashboardClientPage() {
     const { data: session, status } = useSession();
-    console.log(session);
+    const [user] = useState<IUser[]>(session?.user as unknown as IUser[] || []);
     if (status === "loading") return <div>Loading...</div>;
-    const users = session?.user;
+
+    if (!session) {
+        redirect('/login');
+    }
+
+
+    const users = user[0];
 
     return (
         <div className="space-y-6">
