@@ -1,5 +1,16 @@
 // src/lib/api.ts
 
+export class ApiError extends Error {
+    constructor(
+        public message: string,
+        public status: number,
+        public data?: any
+    ) {
+        super(message);
+        this.name = "ApiError";
+    }
+}
+
 interface RequestOptions extends Omit<RequestInit, 'body'> {
     token?: string;
     body?: unknown;
@@ -80,7 +91,14 @@ async function apiFetch<T>(
             console.error("Non-JSON API Error Response:", responseText);
             errorMessage = response.statusText || errorMessage;
         }
-        return errorMessage as unknown as T;
+
+        // Global Error Handling (Middleware-like logic)
+        if (response.status === 401) {
+            // Opsional: Handle Unauthorized (misal: log event, atau trigger refresh token)
+            console.warn("⚠️ Unauthorized: Token expired or invalid.");
+        }
+
+        throw new ApiError(errorMessage, response.status, responseJson);
     }
 
     return responseJson as T;
