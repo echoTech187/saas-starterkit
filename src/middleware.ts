@@ -17,7 +17,7 @@ export default withAuth(
             return NextResponse.redirect(url);
         }
 
-        return NextResponse.next();
+        return NextResponse.redirect(new URL(path, req.url));
     },
     {
         callbacks: {
