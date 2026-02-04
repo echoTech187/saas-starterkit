@@ -53,14 +53,13 @@ async function apiFetch<T>(
     }
     console.log(`${BASE_URL}${endpoint}`, config);
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
-    console.log(await response.json());
+    console.log(response.ok, response.status, response.statusText, response.body);
     if (!response.ok) {
         let errorMessage = `HTTP error! status: ${response.status}`;
         try {
             const errorData = await response.json();
             errorMessage = errorData.message || errorMessage;
         } catch {
-            // If response is not JSON, use default message
             errorMessage = response.statusText || errorMessage;
         }
         return errorMessage as unknown as T;

@@ -54,6 +54,7 @@ export const authOptions: NextAuthOptions = {
                     return false;
                 }
                 const userExist = await authUseCase.checkUserByEmail(profile?.email);
+                console.log('userExist', userExist);
                 if (userExist.exists) {
                     const result = await authUseCase.loginWithGoogle(user);
                     if (result.success) {

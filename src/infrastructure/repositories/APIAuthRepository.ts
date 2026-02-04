@@ -41,6 +41,7 @@ export class APIAuthRepository implements AuthRepository {
     async checkUserByEmail(email: string): Promise<{ exists: boolean }> {
         try {
             const data: ApiResponse = await api.get('/check-user-by-email?email=' + email);
+            console.log('data', data);
             if (!data.success) {
                 return { exists: false };
             } else {
@@ -52,10 +53,9 @@ export class APIAuthRepository implements AuthRepository {
 
         } catch (error) {
             console.error("Error checking user by email:", error);
+            return { exists: false };
         }
-        // Default to exists: false in case of an error to prevent locking users out.
-        // Or consider if throwing an error is more appropriate for your app.
-        return { exists: false };
+
     }
 
     async profile(token: string): Promise<IUser> {

@@ -61,7 +61,7 @@ export async function registerAction(prevState: unknown, formData: FormData) {
             password: formData.get("password") as string,
             confirmPassword: formData.get("confirm_password") as string,
         });
-        console.log(result);
+        console.log('result', result);
         if (result.success) {
             return {
                 success: true,
@@ -134,6 +134,7 @@ export async function verificationAction(prevState: unknown, formData: FormData)
 
     try {
         const result = await authUseCase.registerCompleted(email, code);
+        console.log('result', result);
         if (!result.success) {
             return {
                 success: false,
