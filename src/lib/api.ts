@@ -107,13 +107,17 @@ async function apiFetch<T>(
         const errorObj = new ApiError(errorMessage, response.status, responseJson);
 
         // Sentry Integration: Capture error sebelum di-throw
-        Sentry.withScope((scope) => {
-            scope.setTag("api_method", config.method?.toString() || "GET");
-            scope.setTag("api_endpoint", endpoint);
-            scope.setTag("http_status", response.status);
-            scope.setExtra("response_body", responseJson || responseText);
-            Sentry.captureException(errorObj);
-        });
+        try {
+            Sentry.withScope((scope) => {
+                scope.setTag("api_method", config.method?.toString() || "GET");
+                scope.setTag("api_endpoint", endpoint);
+                scope.setTag("http_status", response.status);
+                scope.setExtra("response_body", responseJson || responseText);
+                Sentry.captureException(errorObj);
+            });
+        } catch (e) {
+            console.error("Sentry logging failed:", e);
+        }
 
         throw errorObj;
     }
