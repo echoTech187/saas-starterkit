@@ -1,16 +1,4 @@
 // src/lib/api.ts
-import * as Sentry from "@sentry/nextjs";
-
-export class ApiError extends Error {
-    constructor(
-        public message: string,
-        public status: number,
-        public data?: unknown,
-    ) {
-        super(message);
-        this.name = "ApiError";
-    }
-}
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {
     token?: string;
@@ -92,25 +80,7 @@ async function apiFetch<T>(
             console.error("Non-JSON API Error Response:", responseText);
             errorMessage = response.statusText || errorMessage;
         }
-
-        // Global Error Handling (Middleware-like logic)
-        if (response.status === 401) {
-            // Opsional: Handle Unauthorized (misal: log event, atau trigger refresh token)
-            console.warn("⚠️ Unauthorized: Token expired or invalid.");
-        }
-
-        const errorObj = new ApiError(errorMessage, response.status, responseJson);
-
-        // Sentry Integration: Capture error sebelum di-throw ke UI
-        Sentry.withScope((scope) => {
-            scope.setTag("api_method", config.method?.toString() || "GET");
-            scope.setTag("api_endpoint", endpoint);
-            scope.setTag("http_status", response.status);
-            scope.setExtra("response_body", responseJson || responseText);
-            Sentry.captureException(errorObj);
-        });
-
-        throw errorObj;
+        return errorMessage as unknown as T;
     }
 
     return responseJson as T;
