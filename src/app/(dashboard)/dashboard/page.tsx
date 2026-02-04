@@ -5,10 +5,10 @@ import { permanentRedirect } from "next/navigation";
 
 export default async function Dashboard() {
     const storeToken = (await cookies());
-    const token = storeToken.get("next-auth.session-token")?.value;
+    const token = storeToken.get("token")?.value;
     console.log(token);
     if (!token) {
-        permanentRedirect("/login");
+        permanentRedirect(new URL("/login").toString());
     }
 
     return (
