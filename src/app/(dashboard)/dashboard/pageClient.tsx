@@ -15,15 +15,15 @@ import { redirect } from "next/navigation";
 
 export default function DashboardClientPage() {
     const { data: session, status } = useSession();
-    const [user] = useState<IUser[]>(session?.user as unknown as IUser[] || []);
+    const [user] = useState<IUser>(session?.user as unknown as IUser || undefined);
     if (status === "loading") return <div>Loading...</div>;
 
-    if (!session) {
+    if (!session?.accessToken) {
         redirect('/login');
     }
 
 
-    const users = user[0];
+    const users = user;
 
     return (
         <div className="space-y-6">
