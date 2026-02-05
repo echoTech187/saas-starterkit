@@ -94,7 +94,7 @@ export const authOptions: NextAuthOptions = {
             }
         },
 
-        async jwt({ token, user, account }) {
+        async jwt({ token, user, account, trigger, session }) {
             if (user) {
                 token.user = user;
                 // Ambil token dari user atau dari account (jika user reset)
@@ -102,6 +102,11 @@ export const authOptions: NextAuthOptions = {
                 token.code = user.code;
                 // Ambil status user baru dari user atau account
                 token.isNewUser = user.isNewUser || (account as any)?.isNewUser;
+            }
+
+            // Handle update dari client (useSession().update)
+            if (trigger === "update" && session?.isNewUser === false) {
+                token.isNewUser = false;
             }
             return token;
         },

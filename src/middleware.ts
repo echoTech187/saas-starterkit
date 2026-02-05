@@ -19,7 +19,10 @@ export default withAuth(
 
         // 2. Handle New User
         if (isNewUser) {
-            return NextResponse.redirect(new URL("/new-password", req.url));
+            if (path !== "/new-password") {
+                return NextResponse.redirect(new URL("/new-password", req.url));
+            }
+            return NextResponse.next();
         }
 
         return NextResponse.next();
