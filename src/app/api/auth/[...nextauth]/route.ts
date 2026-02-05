@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
-import NextAuth, { NextAuthOptions, User } from "next-auth"
+import NextAuth, { Account, NextAuthOptions, User } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
 import { authUseCase } from "@/di/modules"
@@ -59,6 +60,10 @@ export const authOptions: NextAuthOptions = {
                     if (result.success) {
                         user.token = result.token || result.accessToken;
                         user.isNewUser = false;
+                        // Backup data ke account object agar terbawa ke JWT
+                        if (account) {
+                            (account as Account).accessToken = user.token;
+                        }
                         return true;
 
                     }
@@ -72,6 +77,11 @@ export const authOptions: NextAuthOptions = {
 
                         user.token = result.token || result.accessToken;
                         user.isNewUser = true;
+                        // Backup data ke account object agar terbawa ke JWT
+                        if (account) {
+                            (account as Account).accessToken = user.token;
+                            (account as Account).isNewUser = true;
+                        }
                         return true;
                     }
 
@@ -84,12 +94,14 @@ export const authOptions: NextAuthOptions = {
             }
         },
 
-        async jwt({ token, user }) {
+        async jwt({ token, user, account }) {
             if (user) {
                 token.user = user;
-                token.accessToken = user.token;
+                // Ambil token dari user atau dari account (jika user reset)
+                token.accessToken = user.token || (account as any)?.accessToken;
                 token.code = user.code;
-                token.isNewUser = user.isNewUser;
+                // Ambil status user baru dari user atau account
+                token.isNewUser = user.isNewUser || (account as any)?.isNewUser;
             }
             return token;
         },
