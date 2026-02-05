@@ -9,15 +9,22 @@ import { useOnboarding } from "@/hooks/use-onboarding";
 import { Badge } from "@/components/ui/badge";
 import { X, ArrowRight, ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
 import Logo from "@/components/landing/logo";
+import { useEffect } from "react";
+import { toast } from "sonner";
 
 export default function OnboardingPage() {
     const {
         step, formData, inviteInput, isLoading,
         setInviteInput, updateData, prevStep,
-        removeEmail, handleNextStep, handleAddEmail, handleFinish, progressValue
+        removeEmail, handleNextStep, handleAddEmail, handleFinish, progressValue, error, setError
     } = useOnboarding();
-
-    
+    useEffect(() => {
+        if (error) {
+            toast.error(error);
+        } else {
+            setError("");
+        }
+    }, [error, setError]);
     return (
         <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 relative overflow-hidden">
 
@@ -29,8 +36,8 @@ export default function OnboardingPage() {
 
             {/* --- HEADER LOGO --- */}
             <div className="mb-8 text-center animate-in fade-in slide-in-from-top-4 duration-700 relative z-10">
-                <div className="h-14 w-14 bg-linear-to-br from-cyan-600 to-blue-700 rounded-2xl mx-auto flex items-center justify-center text-white shadow-xl shadow-cyan-500/20 mb-6 ring-1 ring-white/10">
-                    <Logo src="/src/logo/light-mode.png" className="h-12 w-12" showTitle={false} />
+                <div className="h-14 w-14 rounded-2xl mx-auto flex items-center justify-center text-white shadow-xl shadow-cyan-500/20 mb-6 ring-1 ring-white/10">
+                    <Logo src="/src/logo/logo-full.png" className="h-12 w-12" showTitle={false} />
                 </div>
                 <h1 className="text-3xl font-bold text-white tracking-tight">Setup Project</h1>
                 <p className="text-zinc-400 text-sm mt-2">Hanya butuh waktu kurang dari 2 menit.</p>

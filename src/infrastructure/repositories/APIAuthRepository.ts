@@ -25,7 +25,6 @@ export class APIAuthRepository implements AuthRepository {
         }
 
         const response: ApiResponse = await api.post('/register', account);
-        console.log(response);
         return response;
     }
 
@@ -41,7 +40,6 @@ export class APIAuthRepository implements AuthRepository {
     async checkUserByEmail(email: string): Promise<{ exists: boolean }> {
         try {
             const data: ApiResponse = await api.get('/check-user-by-email?email=' + email);
-            console.log('data', data);
             if (!data.success) {
                 return { exists: false };
             } else {

@@ -1,44 +1,25 @@
-import { withAuth } from "next-auth/middleware";
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from 'next/server'
+import { getToken } from 'next-auth/jwt'
+import { authUseCase } from '@/di/modules'
 
-export default withAuth(
-    function middleware(req) {
-        const token = req.nextauth.token;
-        const isNewUser = token?.isNewUser;
-        const path = req.nextUrl.pathname;
+export default async function middleware(req: NextRequest) {
+  const token = await getToken({ req })
+  const { pathname } = new URL(req.url)
 
-        // 1. Handle Login Route
-        if (path === "/login") {
-            // Jika user sudah login, jangan biarkan masuk ke halaman login lagi, lempar ke dashboard
-            if (token && !isNewUser) {
-                return NextResponse.redirect(new URL("/dashboard", req.url));
-            }
-            // Jika belum login, biarkan akses ke halaman login
-            return NextResponse.next();
-        }
+  // Extract workspace slug from URL path
+  const workspaceSlug = pathname.split('/')[1]
 
-        // 2. Handle New User
-        if (isNewUser) {
-            if (path !== "/new-password") {
-                return NextResponse.redirect(new URL("/new-password", req.url));
-            }
-            return NextResponse.next();
-        }
-
-        return NextResponse.next();
-    },
-    {
-        callbacks: {
-            authorized: ({ token, req }) => {
-                // Izinkan akses ke /login tanpa token agar middleware bisa berjalan
-                if (req.nextUrl.pathname === "/login") {
-                    return true;
-                }
-                // Untuk rute lain (dashboard), wajib ada token
-                return !!token;
-            },
-        },
+  // Validate workspace exists and user has access
+  if (workspaceSlug) {
+    const workspace = await authUseCase.getWorkspaceBySlug(workspaceSlug)
+    if (!workspace) return NextResponse.redirect('/404')
+    if (!token?.activeWorkspaceId) {
+      return NextResponse.redirect(`/workspace/${workspace.slug}/onboarding`)
     }
-)
+    if (workspace.id !== token?.activeWorkspaceId) {
+      return NextResponse.redirect(`/workspace/${workspace.slug}/onboarding`)
+    }
+  }
 
-export const config = { matcher: ["/dashboard/:path*", "/login"] }
+  return NextResponse.next()
+}

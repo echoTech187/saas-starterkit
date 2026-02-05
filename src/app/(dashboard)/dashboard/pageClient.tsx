@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
     Zap, Users, ArrowUpRight,
     Server, Database, Globe
@@ -16,7 +16,6 @@ import { decodeToken } from "@/app/_actions/authActions";
 
 export default function DashboardClientPage() {
     const { data: session, status } = useSession();
-    console.log(session)
     const [user, setUser] = useState<IUser | undefined>(undefined);
     useEffect(() => {
 
@@ -34,14 +33,12 @@ export default function DashboardClientPage() {
                 redirect('/login');
             }
             const users = await decodeToken(session?.accessToken as string);
-            console.log('users response', users);
             setUser(users);
         }
         getUser();
     }, [session, status]);
 
     if (!user) return;
-    console.log('users', user);
 
     return (
         <div className="space-y-6">

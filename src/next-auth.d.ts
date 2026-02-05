@@ -1,5 +1,4 @@
 import { DefaultSession, DefaultUser } from "next-auth"
-import { JWT } from "next-auth/jwt"
 
 // Extend the User and Session types
 
@@ -20,6 +19,10 @@ declare module "next-auth" {
         accessToken?: string;
         error?: "RefreshAccessTokenError";
         isNewUser?: boolean;
+        // BARU: Konteks Workspace Aktif
+        activeWorkspaceId?: number | string;
+        activeWorkspaceSlug?: string;
+        activeWorkspaceRole?: "OWNER" | "ADMIN" | "MEMBER";
     }
 
     /**

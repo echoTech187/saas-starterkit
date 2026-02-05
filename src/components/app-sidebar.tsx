@@ -153,7 +153,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <>
             <Sidebar
                 collapsible="icon"
-                className="border-r border-white/10 bg-background text-white"
+                className="hidden lg:flex flex-col border-r border-white/10 bg-background text-white"
                 {...props}
             >
                 {/* --- HEADER: LOGO & TEAM --- */}

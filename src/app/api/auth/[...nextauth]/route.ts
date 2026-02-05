@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-
 import NextAuth, { Account, NextAuthOptions, User } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
@@ -13,7 +12,6 @@ export const authOptions: NextAuthOptions = {
                 username: { label: "Email", type: "email" },
                 password: { label: "Password", type: "password" }
             },
-
             async authorize(credentials) {
                 if (!credentials) {
                     throw new Error("Invalid credentials");
@@ -54,57 +52,49 @@ export const authOptions: NextAuthOptions = {
                     return false;
                 }
                 const userExist = await authUseCase.checkUserByEmail(profile?.email);
-                console.log('userExist', userExist);
                 if (userExist.exists) {
                     const result = await authUseCase.loginWithGoogle(user);
                     if (result.success) {
                         user.token = result.token || result.accessToken;
                         user.isNewUser = false;
-                        // Backup data ke account object agar terbawa ke JWT
                         if (account) {
                             (account as Account).accessToken = user.token;
                         }
                         return true;
-
                     }
                     return true;
                 } else {
-
                     const result = await authUseCase.registerWithGoogle(user);
                     if (!result.success) {
                         return false;
                     } else {
-
                         user.token = result.token || result.accessToken;
                         user.isNewUser = true;
-                        // Backup data ke account object agar terbawa ke JWT
                         if (account) {
                             (account as Account).accessToken = user.token;
                             (account as Account).isNewUser = true;
                         }
                         return true;
                     }
-
                 }
             } else {
                 if (!user.token) return false;
-
                 user.token = user.token;
                 return true;
             }
         },
-
         async jwt({ token, user, account, trigger, session }) {
             if (user) {
                 token.user = user;
-                // Ambil token dari user atau dari account (jika user reset)
                 token.accessToken = user.token || (account as any)?.accessToken;
                 token.code = user.code;
-                // Ambil status user baru dari user atau account
                 token.isNewUser = user.isNewUser || (account as any)?.isNewUser;
+                if (session?.activeWorkspaceId) {
+                    token.activeWorkspaceId = session.activeWorkspaceId;
+                    token.activeWorkspaceSlug = session.activeWorkspaceSlug;
+                    token.activeWorkspaceRole = session.activeWorkspaceRole;
+                }
             }
-
-            // Handle update dari client (useSession().update)
             if (trigger === "update" && session?.isNewUser === false) {
                 token.isNewUser = false;
             }
@@ -114,6 +104,9 @@ export const authOptions: NextAuthOptions = {
             if (token) {
                 session.accessToken = token.accessToken as string;
                 session.isNewUser = token.isNewUser;
+                session.activeWorkspaceId = token.activeWorkspaceId as string | number | undefined;
+                session.activeWorkspaceSlug = token.activeWorkspaceSlug as string | undefined;
+                session.activeWorkspaceRole = token.activeWorkspaceRole as "OWNER" | "ADMIN" | "MEMBER" | undefined;
             }
             return session;
         }
@@ -121,5 +114,4 @@ export const authOptions: NextAuthOptions = {
 }
 
 const handler = NextAuth(authOptions)
-
 export { handler as GET, handler as POST, handler as DELETE, handler as PUT, handler as PATCH }

@@ -1,5 +1,3 @@
-import { cookies } from 'next/headers'
-
 interface RequestOptions extends Omit<RequestInit, 'body'> {
     token?: string;
     body?: unknown;
@@ -42,11 +40,7 @@ async function apiFetch<T>(
     }
 
     const BASE_URL = getBaseUrl();
-    const storeCokies = await cookies();
-    console.log('storeCokies', storeCokies.getAll());
-    console.log(`${BASE_URL}${endpoint}`, config);
     const response = await fetch(`${BASE_URL}${endpoint}`, config);
-    console.log(response.ok, response.status, response.statusText);
     if (!response.ok) {
         let errorMessage = `HTTP error! status: ${response.status}`;
         try {

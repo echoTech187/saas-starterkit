@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { OnboardingData } from "@/lib/types/onboarding";
+import { createWorkspaceAction } from "@/app/_actions/workspace";
+import { onboardingSchema } from "@/lib/validations/onboarding";
 
 
 export function useOnboarding() {
@@ -44,14 +46,27 @@ export function useOnboarding() {
     };
 
     // FINAL SUBMIT
-    const finishOnboarding = () => {
+    const finishOnboarding = async () => {
         setIsLoading(true);
-        // Simulasi Save ke Database
-        setTimeout(() => {
+        setError(""); // Reset error state sebelum request
+
+        try {
+            // Panggil Server Action
+            const result = await createWorkspaceAction(formData);
+
+            if (!result.success) {
+                throw new Error(result.message);
+            }
+
             toast.success("Setup Selesai! Mengarahkan ke Dashboard...");
+            router.push("/dashboard");
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : "Gagal membuat workspace. Silakan coba lagi.";
+            setError(msg);
+            toast.error("Terjadi kesalahan", { description: msg });
+        } finally {
             setIsLoading(false);
-            router.push("/dashboard"); // Redirect ke Dashboard
-        }, 1500);
+        }
     };
 
 
@@ -59,31 +74,29 @@ export function useOnboarding() {
     const handleNextStep = () => {
         setError("");
         // Validasi Step 1
+        onboardingSchema.safeParse(formData);
+
+        // Validasi Step 2
+
         if (step === 1) {
-            if (!formData.fullName.trim()) {
+            // Cek manual field spesifik step 1 karena Zod memvalidasi semua
+            if (!formData.fullName) {
                 setError("Nama Lengkap wajib diisi");
-                toast.error("Nama Lengkap wajib diisi", { description: "Kami perlu tahu nama Anda." });
                 return;
             }
             if (!formData.role) {
                 setError("Role wajib dipilih");
-                toast.error("Role wajib dipilih", { description: "Pilih role yang paling sesuai." });
                 return;
             }
         }
 
         // Validasi Step 2
         if (step === 2) {
-            if (!formData.projectName.trim()) {
-                setError("Nama Project wajib diisi");
-                toast.error("Nama Project wajib diisi", { description: "Nama project tidak boleh kosong." });
-                return;
-            }
-            // Validasi format domain sederhana (opsional)
-            if (formData.projectDomain && /[^a-z0-9-]/.test(formData.projectDomain)) {
-                setError("Format Domain tidak valid");
-                toast.error("Format Domain tidak valid", { description: "Hanya gunakan huruf kecil, angka, dan strip (-)." });
-                return;
+            // Gunakan regex dari schema untuk domain
+            const domainRegex = /^[a-z0-9-]+$/;
+            if (!formData.projectName) { setError("Nama Project wajib diisi"); return; }
+            if (!domainRegex.test(formData.projectDomain)) {
+                setError("Format Domain tidak valid (huruf kecil, angka, strip)");
             }
         }
 
@@ -151,5 +164,6 @@ export function useOnboarding() {
         handleAddEmail,
         handleFinish,
         error,
+        setError
     };
 }
