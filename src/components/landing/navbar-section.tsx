@@ -53,8 +53,8 @@ export default function NavbarSection() {
                         <DrawerContent className='w-64 p-0 bg-gray-900 border-0 text-white data-[vaul-drawer-direction=left]:border-0 max-md:data-[vaul-drawer-direction=left]:w-full'>
                             <DrawerHeader className="p-6 border-b border-white/10">
                                 <DrawerTitle className="flex justify-between items-center w-full">
-                                    <div className="h-8 w-8 bg-linear-to-br from-cyan-600 to-blue-700 rounded flex items-center justify-center text-white shadow-xl shadow-cyan-500/20 ring-1 ring-white/10">
-                                        <Logo src="/src/logo/light-mode.png" className="h-6 w-6" />
+                                    <div className="h-8 w-8  rounded flex items-center justify-center text-white shadow-xl shadow-cyan-500/20 ring-1 ring-white/10">
+                                        <Logo src="/src/logo/logo-full.png" className="h-6 w-6" />
                                     </div>
                                     <DrawerClose asChild>
                                         <XIcon className="text-zinc-400 h-5 w-5" />
@@ -97,8 +97,8 @@ export default function NavbarSection() {
                         <a href='#features' onClick={(e) => handleScroll(e, '#features')} className='hover:text-white transition-colors'>Fitur</a>
 
                         <a href='#hero' onClick={(e) => handleScroll(e, '#hero')}>
-                            <div className="h-14 w-14 bg-linear-to-br from-cyan-600 to-blue-700 rounded-2xl mx-auto flex items-center justify-center text-white shadow-xl shadow-cyan-500/20 mb-6 ring-1 ring-white/10">
-                                <Logo src="/src/logo/light-mode.png" className="h-12 w-12" showTitle={false} />
+                            <div className="h-14 w-14  rounded-2xl mx-auto flex items-center justify-center text-white shadow-xl shadow-cyan-500/20 mb-6 ring-1 ring-white/10">
+                                <Logo src="/src/logo/logo-full.png" className="h-12 w-12" showTitle={false} />
                             </div>
                         </a>
 

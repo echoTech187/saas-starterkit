@@ -22,7 +22,7 @@ export function SiteFooter() {
 
                     {/* Brand Column */}
                     <div className="space-y-4">
-                        <Logo src="/src/logo/dark-mode.png" width={48} height={48} />
+                        <Logo src="/src/logo/logo.png" width={48} height={48} />
                         <p className="text-sm text-white/60 max-w-xs">
                             Starter kit terbaik untuk developer Indonesia. Bangun SaaS impian Anda dalam hitungan hari, bukan bulan.
                         </p>

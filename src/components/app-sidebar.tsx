@@ -160,14 +160,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarHeader className="bg-background border-b border-white/5 pb-4">
                     <SidebarMenu>
                         {/* LOGO */}
-                        <SidebarMenuItem className="flex justify-center py-2">
+                        <SidebarMenuItem className="flex justify-start items-center gap-2 py-2">
                             {state === "collapsed" ? (
-                                <Image src="/src/logo/dark-mode-horizontal.png" width={400} height={200} alt="Logo" unoptimized loading="eager" className="w-8 h-auto" />
+                                <>
+                                    <Image src="/src/logo/logo-full.png" width={400} height={200} alt="Logo" unoptimized loading="eager" className="w-8 h-auto" />
+                                </>
                             ) : (
-                                <div className="flex items-start gap-2 px-2 w-full h-full">
-                                    <Image src="/src/logo/dark-mode-horizontal.png" width={400} height={200} alt="Logo" unoptimized loading="eager" className="w-12 h-auto" />
-                                </div>
+                                <>
+                                    <Image src="/src/logo/logo-full.png" width={400} height={200} alt="Logo" unoptimized loading="eager" className="w-12 h-auto" />
+                                </>
+
                             )}
+                            <span className="font-extrabold text-lg">Nusantara Saas</span>
                         </SidebarMenuItem>
 
                         {/* TEAM SWITCHER (FUNGSI BARU) */}
